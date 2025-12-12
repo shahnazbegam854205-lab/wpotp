@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Happy OTP - API Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #121212 100%);
+            color: #e5e7eb;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        /* Login Modal */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 255, 153, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 255, 153, 0.1);
+        }
+        
+        /* Dashboard Header */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(0, 255, 153, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Card Design */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 153, 0.2);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: #00ff99;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 153, 0.1);
+        }
+        
+        /* API Key Display */
+        .api-key-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 255, 153, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        
+        /* Code Block */
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 12px;
+            border-left: 4px solid #00ff99;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff99;
+            color: black;
+            padding: 12px 20px;
+            border-radius: 8px;
+            transform: translateX(200%);
+            transition: transform 0.3s;
+            z-index: 1001;
+            font-weight: 500;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(45deg, #00ff99, #008b45);
+            border: none;
+            color: black;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 153, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #f72585, #b5179e);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        /* Service Badge */
+        .service-badge {
+            background: rgba(0, 255, 153, 0.1);
+            border: 1px solid rgba(0, 255, 153, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            display: inline-block;
+            margin: 2px;
+        }
+        
+        /* Mobile Navigation */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 255, 153, 0.2);
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            padding: 12px 0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .nav-item.active {
+            color: #00ff99;
+        }
+        
+        /* Loading Animation */
+        .loading-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        /* Mobile Specific */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            
+            .text-4xl {
+                font-size: 2rem;
+            }
+            
+            .text-3xl {
+                font-size: 1.75rem;
+            }
+            
+            .text-2xl {
+                font-size: 1.5rem;
+            }
+            
+            .p-6 {
+                padding: 1rem;
+            }
+            
+            .code-block {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- Login Modal -->
+    <div id="loginModal" class="login-modal">
+        <div class="login-box">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 to-emerald-600 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-key text-2xl text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Happy OTP Login</h2>
+                <p class="text-gray-400 mt-2">Sign in to manage your API</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-gray-300 mb-2">Email</label>
+                    <input type="email" id="loginEmail" 
+                           class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white"
+                           placeholder="your@email.com" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-300 mb-2">Password</label>
+                    <input type="password" id="loginPassword" 
+                           class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white"
+                           placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-semibold">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </button>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-gray-400 text-sm">Contact admin for account</p>
+                </div>
+            </form>
+            
+            <div id="loginError" class="mt-4 p-3 bg-red-900 border border-red-700 rounded-lg text-red-200 hidden"></div>
+        </div>
+    </div>
+    
+    <!-- Dashboard Header -->
+    <header id="dashboardHeader" class="dashboard-header hidden">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-emerald-600 flex items-center justify-center mr-3">
+                        <i class="fas fa-api text-lg text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold">Happy OTP API</h1>
+                        <p class="text-gray-400 text-xs" id="userEmail"></p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="changeApiKey()" class="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg text-sm">
+                        <i class="fas fa-sync-alt mr-1"></i>Change Key
+                    </button>
+                    <button onclick="logout()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav md:hidden hidden" id="mobileNav">
+        <div class="flex justify-around">
+            <a href="#dashboard" class="nav-item active" onclick="setActiveNav(this)">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="#services" class="nav-item" onclick="setActiveNav(this)">
+                <i class="fas fa-list text-lg"></i>
+                <span class="text-xs">Services</span>
+            </a>
+            <a href="#api-keys" class="nav-item" onclick="setActiveNav(this)">
+                <i class="fas fa-key text-lg"></i>
+                <span class="text-xs">API Key</span>
+            </a>
+            <a href="#endpoints" class="nav-item" onclick="setActiveNav(this)">
+                <i class="fas fa-code text-lg"></i>
+                <span class="text-xs">Endpoints</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Main Dashboard -->
+    <div id="dashboardContent" class="container mx-auto px-4 pb-24 md:pb-4 hidden">
+        
+        <!-- Domain Info -->
+        <div class="card p-4 mb-4 mt-4">
+            <div class="flex items-center">
+                <i class="fas fa-globe text-green-400 text-xl mr-3"></i>
+                <div>
+                    <h3 class="font-semibold">API Base URL</h3>
+                    <p class="text-gray-300 text-sm" id="currentDomain">Loading...</p>
+                    <p class="text-gray-500 text-xs">All API requests start with this URL</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="card p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Balance</p>
+                        <h2 class="text-2xl font-bold" id="userBalance">₹0</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-green-900 flex items-center justify-center">
+                        <i class="fas fa-wallet text-green-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">API Requests</p>
+                        <h2 class="text-2xl font-bold" id="apiRequests">0</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-blue-900 flex items-center justify-center">
+                        <i class="fas fa-exchange-alt text-blue-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Success</p>
+                        <h2 class="text-2xl font-bold" id="apiSuccess">0</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-emerald-900 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-emerald-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Spent</p>
+                        <h2 class="text-2xl font-bold" id="totalSpent">₹0</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-purple-900 flex items-center justify-center">
+                        <i class="fas fa-rupee-sign text-purple-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Key Section -->
+        <section id="api-keys" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-key text-green-400 mr-2"></i>Your API Key
+            </h2>
+            
+            <div class="card p-5">
+                <div class="mb-4">
+                    <div class="api-key-box mb-3">
+                        <div class="flex justify-between items-start">
+                            <div id="currentApiKey" class="text-lg">
+                                <div class="spinner-border spinner-border-sm text-green-400 mr-2" role="status"></div>
+                                Loading API key...
+                            </div>
+                            <button onclick="copyApiKey()" class="px-3 py-1 bg-green-900 text-green-300 rounded-lg text-sm">
+                                <i class="fas fa-copy mr-1"></i>Copy
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-400 text-sm">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Use this key in all API requests as <code class="bg-gray-800 px-1">?api_key=YOUR_KEY</code>
+                    </p>
+                </div>
+                
+                <!-- Change API Key -->
+                <div class="mt-6">
+                    <h3 class="font-semibold mb-3 text-red-400">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Change API Key
+                    </h3>
+                    
+                    <div class="alert bg-red-900 border border-red-700 rounded-lg p-3 mb-4">
+                        <p class="text-red-200 text-sm">
+                            <strong>Warning:</strong> Changing API key will immediately invalidate old key. 
+                            Update all applications with new key.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-300 mb-2">Reason for change</label>
+                        <select id="changeReason" class="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg text-white">
+                            <option value="">Select reason</option>
+                            <option value="security">Security concern / Suspected leak</option>
+                            <option value="rotation">Regular key rotation</option>
+                            <option value="development">Development/Testing</option>
+                            <option value="other">Other reason</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="changeApiKey()" id="changeKeyBtn" class="w-full btn-danger py-3">
+                        <i class="fas fa-sync-alt mr-2"></i>Generate New API Key
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- All Services -->
+        <section id="services" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-server text-blue-400 mr-2"></i>Available Services
+            </h2>
+            
+            <div class="card p-5">
+                <div class="mb-4">
+                    <p class="text-gray-300 mb-3">All available services with prices:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Service items will be loaded dynamically -->
+                        <div id="servicesList">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-green-400" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="text-gray-400 mt-2">Loading services...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- All API Endpoints -->
+        <section id="endpoints" class="mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-code text-purple-400 mr-2"></i>All API Endpoints
+            </h2>
+            
+            <div class="space-y-4">
+                <!-- Get Balance Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold mr-3">GET</span>
+                            <h3 class="text-lg font-semibold">Get Balance</h3>
+                        </div>
+                        <button onclick="copyEndpoint('balance')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Check your current wallet balance.</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="balanceUrl">Loading...</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Response:</h4>
+                            <div class="code-block p-3 text-sm">
+                                {<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"success"</span>: <span class="text-blue-400">true</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"balance"</span>: <span class="text-blue-400">1000</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"currency"</span>: <span class="text-yellow-300">"INR"</span><br>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Parameters:</h4>
+                            <div class="bg-gray-900 rounded-lg p-3">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-300">api_key</span>
+                                    <span class="text-red-400">Required</span>
+                                </div>
+                                <div class="text-gray-400 text-sm">Your API key</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Get Services Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold mr-3">GET</span>
+                            <h3 class="text-lg font-semibold">Get Services</h3>
+                        </div>
+                        <button onclick="copyEndpoint('services')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Get list of all available services.</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="servicesUrl">Loading...</span>
+                    </div>
+                </div>
+                
+                <!-- Get Number Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold mr-3">GET</span>
+                            <h3 class="text-lg font-semibold">Get Number</h3>
+                        </div>
+                        <button onclick="copyEndpoint('getNumber')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Buy virtual phone number for OTP.</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="getNumberUrl">Loading...</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Parameters:</h4>
+                            <div class="space-y-2">
+                                <div class="bg-gray-900 rounded-lg p-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-300">api_key</span>
+                                        <span class="text-red-400">Required</span>
+                                    </div>
+                                    <div class="text-gray-400 text-xs">Your API key</div>
+                                </div>
+                                <div class="bg-gray-900 rounded-lg p-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-300">country</span>
+                                        <span class="text-red-400">Required</span>
+                                    </div>
+                                    <div class="text-gray-400 text-xs">Service code (e.g., philippines_51)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Response:</h4>
+                            <div class="code-block p-2 text-sm">
+                                {<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"success"</span>: <span class="text-blue-400">true</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"number"</span>: <span class="text-yellow-300">"+639123456789"</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"id"</span>: <span class="text-yellow-300">"123456"</span><br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Get OTP Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold mr-3">GET</span>
+                            <h3 class="text-lg font-semibold">Get OTP</h3>
+                        </div>
+                        <button onclick="copyEndpoint('getOtp')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Check for OTP from active number.</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="getOtpUrl">Loading...</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Parameters:</h4>
+                            <div class="space-y-2">
+                                <div class="bg-gray-900 rounded-lg p-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-300">api_key</span>
+                                        <span class="text-red-400">Required</span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-900 rounded-lg p-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-300">id</span>
+                                        <span class="text-red-400">Required</span>
+                                    </div>
+                                    <div class="text-gray-400 text-xs">Transaction ID from getNumber</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Response:</h4>
+                            <div class="code-block p-2 text-sm">
+                                {<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"success"</span>: <span class="text-blue-400">true</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"otp"</span>: <span class="text-yellow-300">"123456"</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"hasOtp"</span>: <span class="text-blue-400">true</span><br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cancel Number Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold mr-3">GET</span>
+                            <h3 class="text-lg font-semibold">Cancel Number</h3>
+                        </div>
+                        <button onclick="copyEndpoint('cancelNumber')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Cancel active number (within 15 minutes).</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="cancelNumberUrl">Loading...</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Parameters:</h4>
+                            <div class="space-y-2">
+                                <div class="bg-gray-900 rounded-lg p-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-300">api_key</span>
+                                        <span class="text-red-400">Required</span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-900 rounded-lg p-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-300">id</span>
+                                        <span class="text-red-400">Required</span>
+                                    </div>
+                                    <div class="text-gray-400 text-xs">Transaction ID to cancel</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Response:</h4>
+                            <div class="code-block p-2 text-sm">
+                                {<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"success"</span>: <span class="text-blue-400">true</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"refundAmount"</span>: <span class="text-blue-400">52</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"message"</span>: <span class="text-yellow-300">"Cancelled"</span><br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Get History Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold mr-3">GET</span>
+                            <h3 class="text-lg font-semibold">Get History</h3>
+                        </div>
+                        <button onclick="copyEndpoint('getHistory')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Get your transaction history.</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="getHistoryUrl">Loading...</span>
+                    </div>
+                </div>
+                
+                <!-- Change API Key Endpoint -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">POST</span>
+                            <h3 class="text-lg font-semibold">Change API Key</h3>
+                        </div>
+                        <button onclick="copyEndpoint('changeApiKey')" class="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                            <i class="fas fa-copy mr-1"></i>Copy URL
+                        </button>
+                    </div>
+                    
+                    <p class="text-gray-300 mb-3">Generate new API key.</p>
+                    
+                    <div class="code-block p-3 mb-3">
+                        <span class="text-green-400" id="changeApiKeyUrl">Loading...</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Parameters:</h4>
+                            <div class="bg-gray-900 rounded-lg p-3">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-300">api_key</span>
+                                    <span class="text-red-400">Required</span>
+                                </div>
+                                <div class="text-gray-400 text-sm">Your current API key</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 text-green-400">Response:</h4>
+                            <div class="code-block p-3 text-sm">
+                                {<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"success"</span>: <span class="text-blue-400">true</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"newApiKey"</span>: <span class="text-yellow-300">"sk_new_key"</span>,<br>
+                                &nbsp;&nbsp;<span class="text-green-400">"message"</span>: <span class="text-yellow-300">"Key changed"</span><br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Usage Examples -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-laptop-code text-yellow-400 mr-2"></i>Usage Examples
+            </h2>
+            
+            <div class="card p-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-2 text-green-400">Python Example:</h4>
+                        <div class="code-block p-3 text-sm">
+                            <span class="text-blue-400">import</span> requests<br><br>
+                            <span class="text-gray-400"># Your API key and base URL</span><br>
+                            API_KEY = <span class="text-green-400" id="pythonApiKey">"sk_your_key"</span><br>
+                            BASE_URL = <span class="text-green-400" id="pythonBaseUrl">"https://your-domain.com"</span><br><br>
+                            <span class="text-gray-400"># Get balance</span><br>
+                            response = requests.<span class="text-purple-400">get</span>(<br>
+                            &nbsp;&nbsp;<span class="text-green-400">f"{BASE_URL}/api/getBalance?api_key={API_KEY}"</span><br>
+                            )<br>
+                            data = response.<span class="text-purple-400">json</span>()<br>
+                            <span class="text-blue-400">print</span>(<span class="text-green-400">f"Balance: ₹{data['balance']}"</span>)<br><br>
+                            <span class="text-gray-400"># Get number</span><br>
+                            response = requests.<span class="text-purple-400">get</span>(<br>
+                            &nbsp;&nbsp;<span class="text-green-400">f"{BASE_URL}/api/getNumber?api_key={API_KEY}&country=philippines_51"</span><br>
+                            )<br>
+                            data = response.<span class="text-purple-400">json</span>()<br>
+                            <span class="text-blue-400">print</span>(<span class="text-green-400">f"Number: {data['number']}, ID: {data['id']}"</span>)
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2 text-green-400">JavaScript Example:</h4>
+                        <div class="code-block p-3 text-sm">
+                            <span class="text-blue-400">const</span> API_KEY = <span class="text-green-400" id="jsApiKey">'sk_your_key'</span>;<br>
+                            <span class="text-blue-400">const</span> BASE_URL = <span class="text-green-400" id="jsBaseUrl">'https://your-domain.com'</span>;<br><br>
+                            <span class="text-gray-400">// Get balance</span><br>
+                            <span class="text-blue-400">async function</span> <span class="text-yellow-300">getBalance</span>() {<br>
+                            &nbsp;&nbsp;<span class="text-blue-400">const</span> response = <span class="text-blue-400">await</span> fetch(<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-green-400">`${BASE_URL}/api/getBalance?api_key=${API_KEY}`</span><br>
+                            &nbsp;&nbsp;);<br>
+                            &nbsp;&nbsp;<span class="text-blue-400">const</span> data = <span class="text-blue-400">await</span> response.<span class="text-purple-400">json</span>();<br>
+                            &nbsp;&nbsp;<span class="text-blue-400">console</span>.<span class="text-purple-400">log</span>(<span class="text-green-400">`Balance: ₹${data.balance}`</span>);<br>
+                            }<br><br>
+                            <span class="text-gray-400">// Get OTP</span><br>
+                            <span class="text-blue-400">async function</span> <span class="text-yellow-300">getOtp</span>(transactionId) {<br>
+                            &nbsp;&nbsp;<span class="text-blue-400">const</span> response = <span class="text-blue-400">await</span> fetch(<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-green-400">`${BASE_URL}/api/getOtp?api_key=${API_KEY}&id=${transactionId}`</span><br>
+                            &nbsp;&nbsp;);<br>
+                            &nbsp;&nbsp;<span class="text-blue-400">const</span> data = <span class="text-blue-400">await</span> response.<span class="text-purple-400">json</span>();<br>
+                            &nbsp;&nbsp;<span class="text-blue-400">if</span> (data.otp) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">console</span>.<span class="text-purple-400">log</span>(<span class="text-green-400">`OTP: ${data.otp}`</span>);<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button onclick="copyAllExamples()" class="w-full btn-primary py-3">
+                        <i class="fas fa-copy mr-2"></i>Copy All Examples
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // ==================== CONFIGURATION ====================
+        // Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyArJqR7qRvDqz76kc4y6Wpa4Zu2JCcTQgA",
+    authDomain: "royal-5b527.firebaseapp.com",
+    databaseURL: "https://royal-5b527-default-rtdb.firebaseio.com",
+    projectId: "royal-5b527",
+    storageBucket: "royal-5b527.firebasestorage.app",
+    messagingSenderId: "693286904326",
+    appId: "1:693286904326:web:9ae26226c4e92942b85987",
+    measurementId: "G-6M7EGTPQPX"
+};
+        
+        // Current Domain (Auto Detect)
+        const currentDomain = window.location.origin;
+        const baseUrl = currentDomain.includes('localhost') ? 'https://your-domain.com' : currentDomain;
+        const apiBaseUrl = baseUrl + '/api';
+        
+        // All Services Data
+        const allServices = {
+            'philippines_51': { code: '51', name: 'WhatsApp Philippines', country: 'Philippines', price: 52, flag: '🇵🇭' },
+            'india_115': { code: '115', name: 'WhatsApp Indian', country: 'India', price: 103, flag: '🇮🇳' },
+            'vietnam_118': { code: '118', name: 'WhatsApp Vietnam', country: 'Vietnam', price: 61, flag: '🇻🇳' },
+            'india_66': { code: '66', name: 'WhatsApp Indian', country: 'India', price: 140, flag: '🇮🇳' },
+            'fire_premium_106': { code: '106', name: 'Fire Server Premium 1', country: 'India', price: 79, flag: '🇮🇳' },
+            'southafrica_52': { code: '52', name: 'WhatsApp South Africa', country: 'South Africa', price: 45, flag: '🇿🇦' },
+            'colombia_53': { code: '53', name: 'WhatsApp Colombia', country: 'Colombia', price: 71, flag: '🇨🇴' },
+            'philippines2_117': { code: '117', name: 'WhatsApp Philippines 2', country: 'Philippines', price: 64, flag: '🇵🇭' },
+            'indonesia_54': { code: '54', name: 'WhatsApp Indonesia', country: 'Indonesia', price: 49, flag: '🇮🇳' },
+            'telegram_usa_123': { code: '123', name: 'Telegram USA', country: 'USA', price: 65, flag: '🇺🇸' },
+            'telegram_usa2_124': { code: '124', name: 'Telegram USA 2', country: 'USA', price: 92, flag: '🇺🇸' }
+        };
+        
+        // ==================== INITIALIZE FIREBASE ====================
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
+        // ==================== GLOBAL VARIABLES ====================
+        let currentUser = null;
+        let userData = null;
+        let userApiKey = null;
+        
+        // ==================== DOM LOADED ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update domain display
+            document.getElementById('currentDomain').textContent = apiBaseUrl;
+            
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserDashboard();
+                } else {
+                    // Show login modal
+                    document.getElementById('loginModal').style.display = 'flex';
+                }
+            });
+            
+            // Login form submission
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Load services
+            loadServices();
+        });
+        
+        // ==================== LOGIN FUNCTION ====================
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+            
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging in...';
+            loginBtn.disabled = true;
+            loginError.classList.add('hidden');
+            
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                showToast('✅ Login successful!');
+                
+                // Hide login modal
+                document.getElementById('loginModal').style.display = 'none';
+                
+                // Load dashboard
+                currentUser = userCredential.user;
+                loadUserDashboard();
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                loginError.textContent = getErrorMessage(error.code);
+                loginError.classList.remove('hidden');
+                showToast('❌ Login failed');
+            } finally {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+                loginBtn.disabled = false;
+            }
+        }
+        
+        // ==================== LOAD USER DASHBOARD ====================
+        async function loadUserDashboard() {
+            try {
+                // Get user data from Firebase
+                const userRef = database.ref('users/' + currentUser.uid);
+                const snapshot = await userRef.once('value');
+                userData = snapshot.val();
+                
+                if (!userData) {
+                    throw new Error('User data not found');
+                }
+                
+                userApiKey = userData.apiKey;
+                
+                // Update UI
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('currentApiKey').innerHTML = 
+                    `<span class="text-green-300">${userApiKey}</span>`;
+                document.getElementById('userBalance').textContent = `₹${userData.wallet || 0}`;
+                document.getElementById('apiRequests').textContent = userData.apiRequests || 0;
+                document.getElementById('apiSuccess').textContent = userData.apiSuccess || 0;
+                document.getElementById('totalSpent').textContent = `₹${userData.totalSpent || 0}`;
+                
+                // Update API endpoints URLs
+                updateApiEndpoints();
+                
+                // Update examples
+                document.getElementById('pythonApiKey').textContent = `"${userApiKey}"`;
+                document.getElementById('pythonBaseUrl').textContent = `"${baseUrl}"`;
+                document.getElementById('jsApiKey').textContent = `'${userApiKey}'`;
+                document.getElementById('jsBaseUrl').textContent = `'${baseUrl}'`;
+                
+                // Show dashboard
+                document.getElementById('dashboardHeader').classList.remove('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+                document.getElementById('mobileNav').classList.remove('hidden');
+                
+                showToast('✅ Dashboard loaded successfully');
+                
+            } catch (error) {
+                console.error('Load dashboard error:', error);
+                showToast('❌ Failed to load dashboard');
+                logout();
+            }
+        }
+        
+        // ==================== LOAD SERVICES ====================
+        function loadServices() {
+            const servicesList = document.getElementById('servicesList');
+            let html = '';
+            
+            for (const [key, service] of Object.entries(allServices)) {
+                html += `
+                    <div class="card p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-semibold">${service.name}</h4>
+                                <p class="text-gray-400 text-sm">${service.flag} ${service.country}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-green-400">₹${service.price}</div>
+                                <div class="text-gray-500 text-xs">Code: ${key}</div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="service-badge">GET /api/getNumber</span>
+                            <span class="service-badge">country=${key}</span>
+                        </div>
+                        <div class="mt-3">
+                            <button onclick="copyServiceUrl('${key}')" class="w-full px-3 py-2 bg-gray-800 text-gray-300 rounded-lg text-sm">
+                                <i class="fas fa-copy mr-1"></i>Copy URL
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            servicesList.innerHTML = html;
+        }
+        
+        // ==================== UPDATE API ENDPOINTS ====================
+        function updateApiEndpoints() {
+            if (!userApiKey) return;
+            
+            // Get Balance
+            document.getElementById('balanceUrl').textContent = 
+                `${apiBaseUrl}/getBalance?api_key=${userApiKey}`;
+            
+            // Get Services
+            document.getElementById('servicesUrl').textContent = 
+                `${apiBaseUrl}/services`;
+            
+            // Get Number (example with first service)
+            const firstService = Object.keys(allServices)[0];
+            document.getElementById('getNumberUrl').textContent = 
+                `${apiBaseUrl}/getNumber?api_key=${userApiKey}&country=${firstService}`;
+            
+            // Get OTP (example)
+            document.getElementById('getOtpUrl').textContent = 
+                `${apiBaseUrl}/getOtp?api_key=${userApiKey}&id=TRANSACTION_ID`;
+            
+            // Cancel Number
+            document.getElementById('cancelNumberUrl').textContent = 
+                `${apiBaseUrl}/cancelNumber?api_key=${userApiKey}&id=TRANSACTION_ID`;
+            
+            // Get History
+            document.getElementById('getHistoryUrl').textContent = 
+                `${apiBaseUrl}/getHistory?api_key=${userApiKey}`;
+            
+            // Change API Key
+            document.getElementById('changeApiKeyUrl').textContent = 
+                `${apiBaseUrl}/changeApiKey?api_key=${userApiKey}`;
+        }
+        
+        // ==================== CHANGE API KEY ====================
+        async function changeApiKey() {
+            const confirmed = confirm("⚠️ WARNING:\n\nChanging your API key will:\n1. Immediately invalidate current key\n2. Break all existing applications\n3. Require updates everywhere\n\nAre you sure you want to continue?");
+            
+            if (!confirmed) return;
+            
+            const changeKeyBtn = document.getElementById('changeKeyBtn');
+            const originalText = changeKeyBtn.innerHTML;
+            
+            changeKeyBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Changing...';
+            changeKeyBtn.disabled = true;
+            
+            try {
+                // Get Firebase token
+                const token = await currentUser.getIdToken();
+                
+                const response = await fetch(apiBaseUrl + '/dashboard/changeApiKey', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: document.getElementById('changeReason').value,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ API key changed successfully!');
+                    
+                    // Update UI with new key
+                    userApiKey = data.newApiKey;
+                    document.getElementById('currentApiKey').innerHTML = 
+                        `<span class="text-green-300">${userApiKey}</span>`;
+                    
+                    // Update API endpoints
+                    updateApiEndpoints();
+                    
+                    // Update examples
+                    document.getElementById('pythonApiKey').textContent = `"${userApiKey}"`;
+                    document.getElementById('jsApiKey').textContent = `'${userApiKey}'`;
+                    
+                    // Reset form
+                    document.getElementById('changeReason').value = '';
+                    
+                    // Show new key alert
+                    alert(`🚨 IMPORTANT:\n\nYour new API key:\n${data.newApiKey}\n\n⚠️ Copy this key now! Old key is invalid.\n\nUpdate all your applications immediately.`);
+                    
+                } else {
+                    showToast('❌ ' + (data.error || 'Failed to change API key'));
+                }
+                
+            } catch (error) {
+                console.error('Change API key error:', error);
+                showToast('❌ Network error: ' + error.message);
+            } finally {
+                changeKeyBtn.innerHTML = originalText;
+                changeKeyBtn.disabled = false;
+            }
+        }
+        
+        // ==================== COPY FUNCTIONS ====================
+        function copyApiKey() {
+            if (userApiKey) {
+                navigator.clipboard.writeText(userApiKey).then(() => {
+                    showToast('✅ API key copied!');
+                });
+            }
+        }
+        
+        function copyEndpoint(endpointType) {
+            let url = '';
+            
+            switch(endpointType) {
+                case 'balance':
+                    url = document.getElementById('balanceUrl').textContent;
+                    break;
+                case 'services':
+                    url = document.getElementById('servicesUrl').textContent;
+                    break;
+                case 'getNumber':
+                    url = document.getElementById('getNumberUrl').textContent;
+                    break;
+                case 'getOtp':
+                    url = document.getElementById('getOtpUrl').textContent;
+                    break;
+                case 'cancelNumber':
+                    url = document.getElementById('cancelNumberUrl').textContent;
+                    break;
+                case 'getHistory':
+                    url = document.getElementById('getHistoryUrl').textContent;
+                    break;
+                case 'changeApiKey':
+                    url = document.getElementById('changeApiKeyUrl').textContent;
+                    break;
+            }
+            
+            if (url && url !== 'Loading...') {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('✅ URL copied!');
+                });
+            }
+        }
+        
+        function copyServiceUrl(serviceKey) {
+            if (userApiKey) {
+                const url = `${apiBaseUrl}/getNumber?api_key=${userApiKey}&country=${serviceKey}`;
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast(`✅ ${allServices[serviceKey].name} URL copied!`);
+                });
+            }
+        }
+        
+        function copyAllExamples() {
+            const examples = `
+API Base URL: ${baseUrl}
+Your API Key: ${userApiKey}
+
+===== ALL ENDPOINTS =====
+
+1. Get Balance:
+${apiBaseUrl}/getBalance?api_key=${userApiKey}
+
+2. Get Services:
+${apiBaseUrl}/services
+
+3. Get Number (example):
+${apiBaseUrl}/getNumber?api_key=${userApiKey}&country=philippines_51
+
+4. Get OTP:
+${apiBaseUrl}/getOtp?api_key=${userApiKey}&id=TRANSACTION_ID
+
+5. Cancel Number:
+${apiBaseUrl}/cancelNumber?api_key=${userApiKey}&id=TRANSACTION_ID
+
+6. Get History:
+${apiBaseUrl}/getHistory?api_key=${userApiKey}
+
+7. Change API Key:
+${apiBaseUrl}/changeApiKey?api_key=${userApiKey}
+
+===== ALL SERVICES =====
+${Object.entries(allServices).map(([key, service]) => 
+`${service.name} (${service.country}): ${apiBaseUrl}/getNumber?api_key=${userApiKey}&country=${key} - ₹${service.price}`
+).join('\n')}
+            `.trim();
+            
+            navigator.clipboard.writeText(examples).then(() => {
+                showToast('✅ All examples copied!');
+            });
+        }
+        
+        // ==================== HELPER FUNCTIONS ====================
+        function logout() {
+            auth.signOut().then(() => {
+                showToast('👋 Logged out successfully');
+                location.reload();
+            });
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function getErrorMessage(errorCode) {
+            const errors = {
+                'auth/invalid-email': 'Invalid email address',
+                'auth/user-disabled': 'Account disabled',
+                'auth/user-not-found': 'User not found',
+                'auth/wrong-password': 'Incorrect password',
+                'auth/too-many-requests': 'Too many attempts. Try later.'
+            };
+            return errors[errorCode] || 'Login failed. Please try again.';
+        }
+        
+        function setActiveNav(element) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>
