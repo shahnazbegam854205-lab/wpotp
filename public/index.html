@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy OTP Panel - User Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <style>
+    :root {
+      --primary-green: #00ff99;
+      --dark-green: #008b45;
+      --bg-dark: #0a0a0a;
+      --bg-light: #121212;
+      --bg-lighter: #1a1a1a;
+      --border-color: #004d26;
+      --text-glow: 0 0 8px #00ff99, 0 0 12px #00ff99;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #e5e7eb;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-container {
+      background: linear-gradient(to right, #0a0a0a, #004d26, #0a0a0a);
+      border-bottom: 2px solid var(--primary-green);
+      box-shadow: 0 0 20px rgba(0, 255, 153, 0.2);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .whatsapp-icon {
+      color: var(--primary-green);
+      font-size: 2.5rem;
+      filter: drop-shadow(0 0 10px var(--primary-green));
+      animation: pulse-icon 2s infinite;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .premium-title {
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--primary-green);
+      text-shadow: var(--text-glow);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { text-shadow: var(--text-glow); }
+      50% { text-shadow: 0 0 15px #00ff99, 0 0 20px #00ff99; }
+    }
+
+    .balance-display {
+      background: rgba(0, 77, 38, 0.3);
+      border: 1px solid var(--primary-green);
+      border-radius: 10px;
+      padding: 8px 15px;
+      box-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+    }
+
+    .balance-amount {
+      color: var(--primary-green);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .country-selector-btn {
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      color: white;
+      border-radius: 8px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .country-selector-btn:hover {
+      border-color: var(--primary-green);
+      box-shadow: 0 0 15px rgba(0, 255, 153, 0.2);
+    }
+
+    .country-dropdown {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: none;
+      position: absolute;
+      width: 100%;
+      z-index: 100;
+    }
+
+    .country-dropdown.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .country-search {
+      background: var(--bg-lighter);
+      border: 1px solid var(--border-color);
+      color: white;
+      border-radius: 6px;
+      padding: 10px 15px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .country-search:focus {
+      outline: none;
+      border-color: var(--primary-green);
+    }
+
+    .country-option {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .country-option:hover {
+      background: rgba(0, 255, 153, 0.1);
+    }
+
+    .country-option.selected {
+      background: rgba(0, 255, 153, 0.2);
+      border-left: 3px solid var(--primary-green);
+    }
+
+    .get-number-btn {
+      background: linear-gradient(to right, var(--primary-green), var(--dark-green));
+      color: black;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .get-number-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 255, 153, 0.4);
+    }
+
+    .buy-btn {
+      background: linear-gradient(to right, var(--primary-green), var(--dark-green));
+      color: black;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0, 255, 153, 0.3);
+    }
+
+    .buy-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 255, 153, 0.5);
+    }
+
+    .buy-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .number-card {
+      background: var(--bg-light);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .active-number {
+      color: var(--primary-green);
+      font-size: 2.5rem;
+      font-weight: bold;
+      font-family: monospace;
+      text-shadow: 0 0 10px var(--primary-green);
+    }
+
+    .timer {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #ffd166;
+      border-radius: 10px;
+      padding: 15px;
+      color: #ffd166;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
+    }
+
+    .action-btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .refresh-btn {
+      background: linear-gradient(to right, #00ff9d, #00c97a);
+      color: black;
+    }
+
+    .cancel-btn {
+      background: linear-gradient(to right, #ff0040, #e6003c);
+      color: white;
+    }
+
+    .history-table-container {
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      background: rgba(0, 77, 38, 0.5);
+      border-bottom: 2px solid var(--primary-green);
+    }
+
+    .table-row {
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s;
+    }
+
+    .table-row:hover {
+      background: rgba(0, 255, 153, 0.05);
+    }
+
+    .status-success {
+      background: rgba(0, 255, 157, 0.2);
+      color: #00ff9d;
+      border: 1px solid #00ff9d;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .status-error {
+      background: rgba(255, 0, 64, 0.2);
+      color: #ff0040;
+      border: 1px solid #ff0040;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .status-info {
+      background: rgba(0, 162, 255, 0.2);
+      color: #00a2ff;
+      border: 1px solid #00a2ff;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: none; /* Yeh important hai */
+    align-items: center;
+    justify-content: center;
+    z-index: 10000; /* High z-index */
+}
+
+.modal-backdrop.show {
+    display: flex !important; /* Yeh important hai */
+}
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-dark);
+      border: 2px solid var(--primary-green);
+      border-radius: 12px;
+      padding: 25px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 30px rgba(0, 255, 153, 0.3);
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--bg-dark);
+      border: 2px solid var(--primary-green);
+      border-radius: 10px;
+      padding: 20px;
+      width: 280px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 100;
+    }
+
+    .profile-dropdown.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .auth-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 14, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .auth-content {
+      background: #0a0a12;
+      border: 2px solid var(--primary-green);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 50px rgba(0, 255, 153, 0.3);
+    }
+
+    .api-key-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+
+    .stat-card {
+      background: rgba(0, 255, 153, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .auto-refresh-indicator {
+      background: rgba(0, 162, 255, 0.1);
+      border: 1px solid #00a2ff;
+      border-radius: 8px;
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      color: #00a2ff;
+    }
+
+    .change-key-btn {
+      background: linear-gradient(to right, #ffd166, #f9a825);
+      color: black;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .change-key-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .premium-title {
+        font-size: 1.5rem;
+      }
+      
+      .active-number {
+        font-size: 1.8rem;
+      }
+      
+      .timer {
+        font-size: 1.2rem;
+        padding: 12px;
+      }
+    }
+    /* SIRF INPUT BOX KA STYLE */
+#loginEmail, 
+#loginPassword, 
+#signupName, 
+#signupEmail, 
+#signupPassword {
+    background-color: #000000 !important; /* BLACK BACKGROUND */
+    border: 2px solid #00ff99 !important; /* GREEN BORDER */
+    color: #00ff99 !important; /* GREEN TYPING TEXT */
+    padding: 12px !important;
+    border-radius: 8px !important;
+}
+
+/* PLACEHOLDER TEXT */
+#loginEmail::placeholder, 
+#loginPassword::placeholder, 
+#signupName::placeholder, 
+#signupEmail::placeholder, 
+#signupPassword::placeholder {
+    color: #88ff88 !important; /* LIGHT GREEN PLACEHOLDER */
+    opacity: 0.8 !important;
+}
+
+/* FOCUS HONE PAR */
+#loginEmail:focus, 
+#loginPassword:focus, 
+#signupName:focus, 
+#signupEmail:focus, 
+#signupPassword:focus {
+    outline: none !important;
+    border-color: #ffff00 !important; /* YELLOW BORDER ON FOCUS */
+    box-shadow: 0 0 10px #00ff99 !important; /* GLOW EFFECT */
+    color: #ffff00 !important; /* YELLOW TYPING ON FOCUS */
+}
+     </style>
+</head>
+<body class="p-4">
+  
+  <!-- Auth Modal -->
+  <div id="authModal" class="auth-modal" style="display: flex;">
+    <div class="auth-content">
+      <div class="text-center mb-6">
+        <i class="fas fa-user-shield text-5xl mb-4" style="color: var(--primary-green);"></i>
+        <h2 class="text-2xl font-bold" style="color: var(--primary-green);">USER LOGIN</h2>
+        <p class="text-gray-400 mt-2">Login to access OTP services</p>
+      </div>
+      
+      <!-- Login Fields -->
+      <div id="loginFields">
+        <input type="email" id="loginEmail" class="w-full p-3 mb-3 bg-bg-light border border-border-color text-white rounded-lg" placeholder="Email Address">
+        <input type="password" id="loginPassword" class="w-full p-3 mb-4 bg-bg-light border border-border-color text-white rounded-lg" placeholder="Password">
+        
+        <button id="authLoginBtn" class="w-full p-3 mb-3 buy-btn">
+          <i class="fas fa-sign-in-alt mr-2"></i>
+          LOGIN
+        </button>
+        
+        <div class="text-center mt-4">
+          <p class="text-gray-400">
+            Don't have an account? 
+            <a href="javascript:void(0)" id="showSignup" class="text-primary-green font-bold">
+              Create Account
+            </a>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Signup Fields -->
+      <div id="signupFields" class="hidden">
+        <input type="text" id="signupName" class="w-full p-3 mb-3 bg-bg-light border border-border-color text-white rounded-lg" placeholder="Full Name">
+        <input type="email" id="signupEmail" class="w-full p-3 mb-3 bg-bg-light border border-border-color text-white rounded-lg" placeholder="Email Address">
+        <input type="password" id="signupPassword" class="w-full p-3 mb-4 bg-bg-light border border-border-color text-white rounded-lg" placeholder="Create Password">
+        
+        <button id="authSignupBtn" class="w-full p-3 mb-3 buy-btn">
+          <i class="fas fa-user-plus mr-2"></i>
+          SIGN UP
+        </button>
+        
+        <div class="text-center mt-4">
+          <p class="text-gray-400">
+            Already have an account? 
+            <a href="javascript:void(0)" id="showLogin" class="text-primary-green font-bold">
+              Login
+            </a>
+          </p>
+        </div>
+      </div>
+      
+      <div id="authStatus" class="mt-4 p-3 rounded-lg hidden"></div>
+    </div>
+  </div>
+
+  <!-- API Key Modal -->
+<!-- API Key Modal -->
+<div id="apiKeyModal" class="modal-backdrop">
+  <div class="modal-content" style="max-width: 500px; background: #0a0a0a; border: 1px solid #004d26; border-radius: 8px;">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-green-400">
+        <i class="fas fa-key mr-2"></i>
+        YOUR API KEYS
+      </h3>
+      <button onclick="closeApiKeyModal()" class="text-gray-500 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-bold text-gray-300">Primary API Key</h4>
+        <button onclick="changeApiKey()" class="change-key-btn px-3 py-1 bg-green-900 text-green-300 rounded text-sm hover:bg-green-800">
+          <i class="fas fa-redo mr-1"></i> Change API Key
+        </button>
+      </div>
+      <div class="api-key-box p-3 flex items-center bg-black bg-opacity-30 rounded border border-gray-800">
+        <input type="text" id="apiKeyDisplay" class="flex-1 bg-transparent border-none outline-none text-green-300 font-mono text-sm" readonly>
+        <button onclick="copyApiKey()" class="ml-2 px-3 py-1 bg-green-700 text-black rounded text-sm hover:bg-green-600">
+          <i class="fas fa-copy"></i> Copy
+        </button>
+      </div>
+      <p class="text-sm text-gray-500 mt-2">
+        <i class="fas fa-info-circle mr-1 text-green-500"></i>
+        Keep this key secret. Use it to make API calls.
+      </p>
+    </div>
+    
+    <div class="api-example mb-4">
+      <h4 class="font-bold mb-2 text-gray-300">API Usage Example:</h4>
+      <div class="p-3 bg-black bg-opacity-30 rounded border border-gray-800">
+        <code class="text-sm text-green-400">
+          <!-- YOUR WARNING LINE -->
+  YOU GET <span id="apiBaseUrl" class="text-green-300"></span>/getNumber?api_key=<span id="exampleApiKey" class="text-yellow-300">YOUR_API_KEY</span>&country=philippines_51
+        </code>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="stat-card p-3 bg-black bg-opacity-30 rounded border border-gray-800">
+        <div class="text-xl font-bold text-green-400" id="apiRequests">0</div>
+        <div class="text-sm text-gray-500">API Requests</div>
+      </div>
+      <div class="stat-card p-3 bg-black bg-opacity-30 rounded border border-gray-800">
+        <div class="text-xl font-bold text-green-400" id="apiSuccessRate">0%</div>
+        <div class="text-sm text-gray-500">Success Rate</div>
+      </div>
+    </div>
+    
+    <button onclick="openApiDocs()" class="w-full p-3 bg-green-900 text-green-300 rounded hover:bg-green-800 text-sm border border-gray-800">
+      <i class="fas fa-book mr-2"></i>
+      View API Documentation
+    </button>
+  </div>
+</div>
+
+<!-- Change API Key Modal -->
+<div id="changeKeyModal" class="modal-backdrop">
+  <div class="modal-content" style="max-width: 450px; background: #0a0a0a; border: 1px solid #004d26; border-radius: 8px;">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-yellow-400">
+        <i class="fas fa-key mr-2"></i>
+        CHANGE API KEY
+      </h3>
+      <button onclick="closeChangeKeyModal()" class="text-gray-500 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="mb-4">
+      <div class="p-3 bg-yellow-900 bg-opacity-20 border border-yellow-700 rounded-lg mb-3">
+        <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+        <span class="text-yellow-300 text-sm">Warning: Old API key will become invalid immediately!</span>
+      </div>
+      
+      <p class="text-gray-300 mb-4 text-sm">
+        Are you sure you want to change your API key? <br>
+        <strong class="text-red-400">All applications using the old key will stop working.</strong>
+      </p>
+      
+      <div class="space-y-3">
+        <div>
+          <label class="block text-gray-300 mb-1 text-sm">Current Key:</label>
+          <div class="api-key-box p-2 bg-black bg-opacity-30 rounded border border-gray-800">
+            <code class="text-sm text-gray-400" id="currentKeyDisplay">sk_********</code>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-gray-300 mb-1 text-sm">New Key Will Start With:</label>
+          <div class="api-key-box p-2 bg-black bg-opacity-30 rounded border border-gray-800">
+            <code class="text-sm text-green-400">sk_****** (automatically generated)</code>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex gap-3">
+      <button onclick="closeChangeKeyModal()" class="flex-1 p-3 bg-gray-800 border border-gray-700 text-gray-300 rounded hover:border-gray-500 transition text-sm">
+        Cancel
+      </button>
+      <button onclick="confirmChangeApiKey()" class="flex-1 p-3 bg-yellow-600 text-black font-bold rounded hover:bg-yellow-700 transition text-sm">
+        <i class="fas fa-redo mr-2"></i> Change Key
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- New API Key Modal -->
+<div id="newKeyModal" class="modal-backdrop">
+  <div class="modal-content" style="max-width: 450px; background: #0a0a0a; border: 1px solid #004d26; border-radius: 8px;">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-green-400">
+        <i class="fas fa-key mr-2"></i>
+        NEW API KEY GENERATED
+      </h3>
+      <button onclick="closeNewKeyModal()" class="text-gray-500 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="mb-4">
+      <div class="p-3 bg-green-900 bg-opacity-20 border border-green-700 rounded-lg mb-3">
+        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+        <span class="text-green-300 text-sm">API key changed successfully!</span>
+      </div>
+      
+      <div class="api-key-box p-4 bg-black bg-opacity-30 rounded border border-gray-800">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="font-bold text-green-300">Your New API Key:</h4>
+          <button onclick="copyNewApiKey()" class="px-3 py-1 bg-green-600 text-black rounded text-sm hover:bg-green-500">
+            <i class="fas fa-copy"></i> Copy
+          </button>
+        </div>
+        <input type="text" id="newApiKeyDisplay" class="w-full bg-transparent border-none outline-none text-green-300 font-mono text-sm" readonly>
+      </div>
+      
+      <div class="mt-4 p-3 bg-red-900 bg-opacity-20 border border-red-700 rounded-lg">
+        <i class="fas fa-exclamation-circle text-red-400 mr-2"></i>
+        <span class="text-red-300 text-sm">
+          <strong>Important:</strong> Old API key is now invalid. Update all your applications immediately.
+        </span>
+      </div>
+      
+      <div class="mt-4 text-sm text-gray-500">
+        <p><i class="fas fa-info-circle mr-2 text-green-500"></i> Save this key securely. It won't be shown again.</p>
+      </div>
+    </div>
+    
+    <button onclick="closeNewKeyModal()" class="w-full p-3 bg-gray-800 border border-gray-700 text-gray-300 rounded hover:border-green-500 transition text-sm">
+      I have saved the key
+    </button>
+  </div>
+</div>
+
+
+
+  <!-- Support Modal -->
+  <div id="supportModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold" style="color: var(--primary-green);">
+          <i class="fas fa-headset mr-2"></i>
+          SUPPORT
+        </h3>
+        <button onclick="closeSupportModal()" class="text-gray-400 hover:text-white">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="space-y-3">
+        <button onclick="openWhatsAppSupport()" class="w-full flex items-center p-3 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+          <i class="fab fa-whatsapp text-2xl mr-3" style="color: var(--primary-green);"></i>
+          <div class="text-left">
+            <h4 class="font-bold">WhatsApp Support</h4>
+            <p class="text-sm text-gray-400">Get instant help via WhatsApp</p>
+          </div>
+        </button>
+        
+        <button onclick="openTelegramSupport()" class="w-full flex items-center p-3 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+          <i class="fab fa-telegram text-2xl mr-3" style="color: var(--primary-green);"></i>
+          <div class="text-left">
+            <h4 class="font-bold">Telegram Support</h4>
+            <p class="text-sm text-gray-400">Contact us on Telegram</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Balance Modal -->
+  <div id="balanceModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold" style="color: var(--primary-green);">
+          <i class="fas fa-wallet mr-2"></i>
+          ADD BALANCE
+        </h3>
+        <button onclick="closeBalanceModal()" class="text-gray-400 hover:text-white">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="space-y-3">
+        <button onclick="openWhatsAppPayment()" class="w-full flex items-center p-3 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+          <i class="fab fa-whatsapp text-2xl mr-3" style="color: var(--primary-green);"></i>
+          <div class="text-left">
+            <h4 class="font-bold">WhatsApp Payment</h4>
+            <p class="text-sm text-gray-400">Contact via WhatsApp for payment</p>
+          </div>
+        </button>
+        
+        <button onclick="openUPIPayment()" class="w-full flex items-center p-3 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+          <i class="fas fa-money-bill-transfer text-2xl mr-3" style="color: var(--primary-green);"></i>
+          <div class="text-left">
+            <h4 class="font-bold">UPI Payment</h4>
+            <p class="text-sm text-gray-400">Instant UPI payment gateway</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- HEADER -->
+    <header class="header-container p-4 rounded-xl">
+      <div class="flex justify-between items-center">
+        <!-- Left: Logo & Title -->
+        <div class="logo-container flex items-center gap-3">
+          <i class="fab fa-whatsapp whatsapp-icon"></i>
+          <div>
+            <h1 class="premium-title text-2xl sm:text-3xl">HAPPY OTP PANEL</h1>
+            <p class="text-gray-400 text-sm">Virtual Numbers for WhatsApp Verification</p>
+          </div>
+        </div>
+        
+        <!-- Right: Balance & Profile -->
+        <div class="flex items-center gap-4">
+          <!-- Balance Display -->
+          <div class="balance-display hidden md:block">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-wallet" style="color: var(--primary-green);"></i>
+              <span>Balance:</span>
+              <span class="balance-amount" id="balanceDisplay">₹0</span>
+            </div>
+          </div>
+          
+          <!-- API Button -->
+          <button onclick="openApiKeyModal()" class="p-2 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+            <i class="fas fa-key" style="color: var(--primary-green);"></i>
+          </button>
+          
+          <!-- Support Button -->
+          <button onclick="openSupportModal()" class="p-2 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+            <i class="fas fa-headset" style="color: var(--primary-green);"></i>
+          </button>
+          
+          <!-- Profile Button -->
+          <div class="relative">
+            <button id="profileBtn" class="p-2 bg-bg-light border border-border-color rounded-lg hover:border-primary-green transition">
+              <i class="fas fa-user" style="color: var(--primary-green);"></i>
+            </button>
+            
+            <!-- Profile Dropdown -->
+            <div id="profileDropdown" class="profile-dropdown">
+              <div class="mb-4 pb-4 border-b border-border-color">
+                <div class="font-bold" id="profileName">User</div>
+                <div class="text-gray-400 text-sm" id="profileEmail">user@example.com</div>
+                <div class="flex items-center gap-2 mt-2">
+                  <i class="fas fa-wallet" style="color: var(--primary-green);"></i>
+                  <span>Balance:</span>
+                  <span class="font-bold" style="color: var(--primary-green);" id="profileBalance">₹0</span>
+                </div>
+              </div>
+              
+              <div class="space-y-2">
+                <button onclick="openApiKeyModal()" class="w-full p-2 bg-bg-light border border-border-color rounded hover:border-primary-green transition flex items-center gap-2">
+                  <i class="fas fa-key" style="color: var(--primary-green);"></i>
+                  My API Keys
+                </button>
+                
+                <button onclick="openBalanceModal()" class="w-full p-2 bg-bg-light border border-border-color rounded hover:border-primary-green transition flex items-center gap-2">
+                  <i class="fas fa-plus-circle" style="color: var(--primary-green);"></i>
+                  Add Balance
+                </button>
+                
+                <button onclick="refreshHistory()" class="w-full p-2 bg-bg-light border border-border-color rounded hover:border-primary-green transition flex items-center gap-2">
+                  <i class="fas fa-history" style="color: var(--primary-green);"></i>
+                  Refresh History
+                </button>
+                
+                <button onclick="openAPIDocs()" class="w-full p-2 bg-bg-light border border-border-color rounded hover:border-primary-green transition flex items-center gap-2">
+                  <i class="fas fa-book" style="color: var(--primary-green);"></i>
+                  API Docs
+                </button>
+                
+                <button onclick="logout()" class="w-full p-2 bg-red-900 bg-opacity-30 border border-red-700 rounded hover:border-red-500 transition flex items-center gap-2">
+                  <i class="fas fa-sign-out-alt" style="color: #ff0040;"></i>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- STATUS MESSAGE -->
+    <div id="statusMessage" class="status-message hidden"></div>
+    
+    <!-- COUNTRY SELECTOR & BUY SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Country Selector -->
+      <div class="lg:col-span-2">
+        <div class="number-card">
+          <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--primary-green);">
+            <i class="fas fa-globe-asia mr-2"></i>
+            Select Country & Service
+          </h2>
+          
+          <!-- Country Selector Button -->
+          <div class="relative mb-4">
+            <button id="countrySelectorBtn" class="country-selector-btn">
+              <span id="selectedCountryText">Select Country</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            
+            <!-- Country Dropdown -->
+            <div id="countryDropdown" class="country-dropdown mt-2 p-4">
+              <input type="text" id="countrySearch" class="country-search" placeholder="🔍 Search countries..." />
+              
+              <div id="countryOptions">
+                <!-- Countries populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Selected Service Display -->
+          <div id="selectedService" class="p-4 bg-bg-lighter rounded-lg mb-4 hidden">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <span id="selectedFlag" class="text-2xl">🇵🇭</span>
+                <div>
+                  <div id="selectedName" class="font-bold">WhatsApp Philippines</div>
+                  <div class="text-sm text-gray-400" id="selectedCountryName">Philippines</div>
+                </div>
+              </div>
+              <div class="text-2xl font-bold" style="color: #00ff9d;" id="selectedPrice">₹52</div>
+            </div>
+          </div>
+          
+          <!-- Buy Button -->
+          <button id="buyBtn" class="w-full buy-btn py-4 text-lg" disabled onclick="getNumber()">
+            <i class="fas fa-shopping-cart mr-2"></i>
+            BUY NUMBER
+          </button>
+        </div>
+      </div>
+      
+      <!-- Active Number Display -->
+      <div class="lg:col-span-1">
+        <div class="number-card">
+          <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--primary-green);">
+            <i class="fas fa-mobile-alt mr-2"></i>
+            Active Number
+          </h2>
+          
+          <div id="activeNumberSection" class="hidden">
+            <div class="text-center mb-4">
+              <div class="active-number" id="phoneNumber">+63 XXX XXX XXXX</div>
+              <div class="text-gray-400 text-sm mt-2" id="numberCountry">Philippines</div>
+            </div>
+            
+            <div class="timer mb-4">
+              <div class="text-sm mb-1">Time Remaining</div>
+              <div id="countdown">15:00</div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <button id="refreshOtpBtn" class="action-btn refresh-btn" onclick="getOtp(false)">
+                <i class="fas fa-sync-alt"></i>
+                Refresh OTP
+              </button>
+              <button id="cancelNumberBtn" class="action-btn cancel-btn" onclick="cancelNumber()">
+                <i class="fas fa-times-circle"></i>
+                Cancel
+              </button>
+            </div>
+            
+            <div class="auto-refresh-indicator text-center mb-4 hidden" id="autoRefreshIndicator">
+              <i class="fas fa-sync-alt spinning mr-2"></i>
+              Auto-refreshing every 10 seconds
+            </div>
+            
+            <!-- OTP Result -->
+            <div id="otpResult" class="p-4 bg-black bg-opacity-30 rounded-lg border border-border-color hidden">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-bold" style="color: var(--primary-green);">OTP Code:</span>
+                <span id="otpCode" class="text-2xl font-bold" style="color: #00ff9d;">-</span>
+              </div>
+              <div class="text-sm text-gray-400" id="otpStatus">Waiting for OTP...</div>
+            </div>
+          </div>
+          
+          <div id="noActiveNumber" class="text-center py-8">
+            <i class="fas fa-mobile-alt text-5xl mb-4" style="color: var(--border-color);"></i>
+            <p class="text-gray-400">No active number. Select a service and click BUY.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- API STATS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="stat-card">
+        <div class="text-2xl font-bold text-primary-green" id="totalRequests">0</div>
+        <div class="text-sm text-gray-400">Total API Requests</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-2xl font-bold text-primary-green" id="successfulRequests">0</div>
+        <div class="text-sm text-gray-400">Successful</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-2xl font-bold text-primary-green" id="failedRequests">0</div>
+        <div class="text-sm text-gray-400">Failed</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-2xl font-bold text-primary-green" id="totalSpent">₹0</div>
+        <div class="text-sm text-gray-400">Total Spent</div>
+      </div>
+    </div>
+    
+    <!-- PURCHASE HISTORY TABLE -->
+    <div class="number-card">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold flex items-center" style="color: var(--primary-green);">
+          <i class="fas fa-history mr-2"></i>
+          Purchase History
+        </h2>
+        <button onclick="refreshHistory()" class="p-2 bg-bg-light border border-border-color rounded hover:border-primary-green transition">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      
+      <div class="history-table-container">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="table-header">
+              <tr>
+                <th class="p-3 text-left">Country</th>
+                <th class="p-3 text-left">Phone Number</th>
+                <th class="p-3 text-left">Service</th>
+                <th class="p-3 text-left">OTP</th>
+                <th class="p-3 text-left">Time</th>
+                <th class="p-3 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr id="noHistoryRow">
+                <td colspan="6" class="p-8 text-center text-gray-500">
+                  <i class="fas fa-history text-3xl mb-2"></i>
+                  <p>No purchase history yet</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- INSTRUCTIONS -->
+    <div class="number-card">
+      <h3 class="text-lg font-bold mb-4 flex items-center" style="color: var(--primary-green);">
+        <i class="fas fa-info-circle mr-2"></i>
+        How to Use:
+      </h3>
+      <ol class="list-decimal pl-5 space-y-2 text-gray-300">
+        <li>Select a country and service from the dropdown</li>
+        <li>Click "BUY NUMBER" button to purchase a virtual number</li>
+        <li>Use this number in WhatsApp for verification</li>
+        <li>System will automatically check for OTP every 10 seconds</li>
+        <li>If no code received, click "Cancel" to release the number</li>
+        <li>Each number is reserved for 15 minutes only</li>
+        <li><strong>Amount will be deducted based on selected service</strong></li>
+        <li>Amount will be refunded if cancelled within 15 minutes</li>
+      </ol>
+    </div>
+    
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // ========== FIREBASE CONFIGURATION ==========
+    const firebaseConfig = {
+      apiKey: "AIzaSyArJqR7qRvDqz76kc4y6Wpa4Zu2JCcTQgA",
+      authDomain: "royal-5b527.firebaseapp.com",
+      databaseURL: "https://royal-5b527-default-rtdb.firebaseio.com",
+      projectId: "royal-5b527",
+      storageBucket: "royal-5b527.firebasestorage.app",
+      messagingSenderId: "693286904326",
+      appId: "1:693286904326:web:9ae26226c4e92942b85987",
+      measurementId: "G-6M7EGTPQPX"
+    };
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log('Firebase initialized successfully');
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+    }
+
+    const auth = firebase.auth();
+    const database = firebase.database();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    // ========== SERVICE CONFIGURATION ==========
+    const API_BASE_URL = window.location.origin + '/api';
+    
+    const services = {
+      'philippines_51': { code: '51', name: 'WhatsApp Philippines', country: 'Philippines', price: 52, flag: '🇵🇭' },
+      'india_115': { code: '115', name: 'WhatsApp Indian', country: 'India', price: 103, flag: '🇮🇳' },
+      'vietnam_118': { code: '118', name: 'WhatsApp Vietnam', country: 'Vietnam', price: 61, flag: '🇻🇳' },
+      'india_66': { code: '66', name: 'WhatsApp Indian', country: 'India', price: 140, flag: '🇮🇳' },
+      'fire_premium_106': { code: '106', name: 'Fire Server Premium 1', country: 'India', price: 79, flag: '🇮🇳' },
+      'southafrica_52': { code: '52', name: 'WhatsApp South Africa', country: 'South Africa', price: 45, flag: '🇿🇦' },
+      'colombia_53': { code: '53', name: 'WhatsApp Colombia', country: 'Colombia', price: 71, flag: '🇨🇴' },
+      'philippines2_117': { code: '117', name: 'WhatsApp Philippines 2', country: 'Philippines', price: 64, flag: '🇵🇭' },
+      'indonesia_54': { code: '54', name: 'WhatsApp Indonesia', country: 'Indonesia', price: 49, flag: '🇮🇩' },
+      'telegram_usa_123': { code: '123', name: 'Telegram USA', country: 'USA', price: 65, flag: '🇺🇸' },
+      'telegram_usa2_124': { code: '124', name: 'Telegram USA 2', country: 'USA', price: 92, flag: '🇺🇸' }
+    };
+
+    // ========== GLOBAL VARIABLES ==========
+    let currentId = null;
+    let countdownTimer = null;
+    let timeLeft = 900;
+    let timerExpired = false;
+    let currentUser = null;
+    let autoRefreshInterval = null;
+    let selectedService = null;
+    let selectedServicePrice = 0;
+    let userApiKey = null;
+    let activeNumberData = null;
+
+    // ========== DOM ELEMENTS ==========
+    const authModal = document.getElementById('authModal');
+    const loginFields = document.getElementById('loginFields');
+    const signupFields = document.getElementById('signupFields');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const signupName = document.getElementById('signupName');
+    const signupEmail = document.getElementById('signupEmail');
+    const signupPassword = document.getElementById('signupPassword');
+    const authLoginBtn = document.getElementById('authLoginBtn');
+    const authSignupBtn = document.getElementById('authSignupBtn');
+    const showSignup = document.getElementById('showSignup');
+    const showLogin = document.getElementById('showLogin');
+    const authStatus = document.getElementById('authStatus');
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileBalance = document.getElementById('profileBalance');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const statusMessage = document.getElementById('statusMessage');
+    const countrySelectorBtn = document.getElementById('countrySelectorBtn');
+    const countryDropdown = document.getElementById('countryDropdown');
+    const countrySearch = document.getElementById('countrySearch');
+    const countryOptions = document.getElementById('countryOptions');
+    const selectedServiceEl = document.getElementById('selectedService');
+    const selectedFlag = document.getElementById('selectedFlag');
+    const selectedName = document.getElementById('selectedName');
+    const selectedCountryName = document.getElementById('selectedCountryName');
+    const selectedPrice = document.getElementById('selectedPrice');
+    const selectedCountryText = document.getElementById('selectedCountryText');
+    const buyBtn = document.getElementById('buyBtn');
+    const activeNumberSection = document.getElementById('activeNumberSection');
+    const noActiveNumber = document.getElementById('noActiveNumber');
+    const phoneNumber = document.getElementById('phoneNumber');
+    const numberCountry = document.getElementById('numberCountry');
+    const countdown = document.getElementById('countdown');
+    const refreshOtpBtn = document.getElementById('refreshOtpBtn');
+    const cancelNumberBtn = document.getElementById('cancelNumberBtn');
+    const autoRefreshIndicator = document.getElementById('autoRefreshIndicator');
+    const otpResult = document.getElementById('otpResult');
+    const otpCode = document.getElementById('otpCode');
+    const otpStatus = document.getElementById('otpStatus');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const noHistoryRow = document.getElementById('noHistoryRow');
+    const apiKeyModal = document.getElementById('apiKeyModal');
+    const apiKeyDisplay = document.getElementById('apiKeyDisplay');
+    const exampleApiKey = document.getElementById('exampleApiKey');
+    const apiBaseUrl = document.getElementById('apiBaseUrl');
+    const apiRequests = document.getElementById('apiRequests');
+    const apiSuccessRate = document.getElementById('apiSuccessRate');
+    const totalRequests = document.getElementById('totalRequests');
+    const successfulRequests = document.getElementById('successfulRequests');
+    const failedRequests = document.getElementById('failedRequests');
+    const totalSpent = document.getElementById('totalSpent');
+    const changeKeyModal = document.getElementById('changeKeyModal');
+    const newKeyModal = document.getElementById('newKeyModal');
+    const currentKeyDisplay = document.getElementById('currentKeyDisplay');
+    const newApiKeyDisplay = document.getElementById('newApiKeyDisplay');
+
+    // ========== AUTH FUNCTIONS ==========
+    function showAuthMode(mode) {
+      if (mode === 'login') {
+        loginFields.classList.remove('hidden');
+        signupFields.classList.add('hidden');
+      } else {
+        loginFields.classList.add('hidden');
+        signupFields.classList.remove('hidden');
+      }
+    }
+
+    async function signUp() {
+      const name = signupName.value.trim();
+      const email = signupEmail.value.trim();
+      const password = signupPassword.value;
+      
+      if (!name || !email || !password) {
+        showAuthStatus('Please fill all fields', 'error');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showAuthStatus('Password must be at least 6 characters', 'error');
+        return;
+      }
+      
+      try {
+        authSignupBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating account...';
+        authSignupBtn.disabled = true;
+        
+        // Use backend register endpoint
+        const response = await fetch(`${API_BASE_URL}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            name: name
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showAuthStatus('Account created successfully! Logging in...', 'success');
+          
+          // Auto login
+          setTimeout(async () => {
+            try {
+              await auth.signInWithEmailAndPassword(email, password);
+            } catch (loginError) {
+              console.error('Auto login failed:', loginError);
+            }
+          }, 1000);
+          
+        } else {
+          showAuthStatus(data.error || 'Registration failed', 'error');
+        }
+        
+      } catch (error) {
+        console.error('Signup error:', error);
+        showAuthStatus('Network error: ' + error.message, 'error');
+      } finally {
+        authSignupBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> SIGN UP';
+        authSignupBtn.disabled = false;
+      }
+    }
+
+    async function signIn() {
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value;
+      
+      if (!email || !password) {
+        showAuthStatus('Please enter email and password', 'error');
+        return;
+      }
+      
+      try {
+        authLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Logging in...';
+        authLoginBtn.disabled = true;
+        
+        await auth.signInWithEmailAndPassword(email, password);
+        showAuthStatus('Login successful!', 'success');
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        showAuthStatus(getFirebaseError(error), 'error');
+        
+        authLoginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> LOGIN';
+        authLoginBtn.disabled = false;
+      }
+    }
+
+    function getFirebaseError(error) {
+      const msg = error.message || '';
+      if (msg.includes('auth/wrong-password')) return 'Wrong password';
+      if (msg.includes('auth/user-not-found')) return 'User not found';
+      if (msg.includes('auth/email-already-in-use')) return 'Email already registered';
+      if (msg.includes('auth/weak-password')) return 'Weak password';
+      if (msg.includes('auth/invalid-email')) return 'Invalid email';
+      return error.message || 'Authentication failed';
+    }
+
+    function showAuthStatus(message, type) {
+      authStatus.textContent = message;
+      authStatus.className = 'mt-4 p-3 rounded-lg';
+      authStatus.classList.add(type === 'success' ? 'status-success' : 'status-error');
+      authStatus.classList.remove('hidden');
+    }
+
+    function logout() {
+      auth.signOut();
+      resetTransaction();
+      profileDropdown.classList.remove('show');
+    }
+
+    // ========== HELPER FUNCTIONS ==========
+    async function getAuthToken() {
+      const user = auth.currentUser;
+      if (!user) return null;
+      try {
+        return await user.getIdToken();
+      } catch (error) {
+        console.error('Error getting auth token:', error);
+        return null;
+      }
+    }
+
+    // ========== API KEY FUNCTIONS ==========
+    function generateApiKey() {
+      return 'sk_' + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    }
+
+    async function loadApiKey() {
+      if (!currentUser) return;
+      
+      try {
+        const token = await getAuthToken();
+        if (!token) return;
+        
+        const response = await fetch(`${API_BASE_URL}/dashboard/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.user.apiKey) {
+          userApiKey = data.user.apiKey;
+          apiKeyDisplay.value = userApiKey;
+          exampleApiKey.textContent = userApiKey;
+          apiBaseUrl.textContent = API_BASE_URL;
+          currentKeyDisplay.textContent = userApiKey.substring(0, 10) + '...';
+          
+          loadApiStats();
+        }
+      } catch (error) {
+        console.error('Error loading API key:', error);
+      }
+    }
+
+    // ========== NEW: API KEY CHANGE FUNCTIONS ==========
+    async function changeApiKey() {
+      if (!currentUser) {
+        showStatus('Please login first', 'error');
+        return;
+      }
+
+      // Show change key modal
+      openChangeKeyModal();
+    }
+
+    function openChangeKeyModal() {
+      changeKeyModal.classList.add('show');
+      apiKeyModal.classList.remove('show');
+    }
+
+    function closeChangeKeyModal() {
+      changeKeyModal.classList.remove('show');
+    }
+
+    async function confirmChangeApiKey() {
+      try {
+        const token = await getAuthToken();
+        if (!token) {
+          showStatus('Authentication failed', 'error');
+          return;
+        }
+
+        showStatus('Changing API key...', 'info');
+        
+        // Close change modal
+        closeChangeKeyModal();
+        
+        // Call the new API endpoint for changing key
+        const response = await fetch(`${API_BASE_URL}/dashboard/changeApiKey`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update local variables
+          userApiKey = data.newApiKey;
+          
+          // Show new key modal
+          newApiKeyDisplay.value = data.newApiKey;
+          newKeyModal.classList.add('show');
+          
+          // Update API key display in main modal
+          apiKeyDisplay.value = data.newApiKey;
+          exampleApiKey.textContent = data.newApiKey;
+          currentKeyDisplay.textContent = data.newApiKey.substring(0, 10) + '...';
+          
+          showStatus('API key changed successfully!', 'success');
+        } else {
+          showStatus('Failed to change API key: ' + data.error, 'error');
+        }
+      } catch (error) {
+        console.error('Change API key error:', error);
+        showStatus('Failed to change API key', 'error');
+      }
+    }
+
+    function closeNewKeyModal() {
+      newKeyModal.classList.remove('show');
+    }
+
+    function copyNewApiKey() {
+      navigator.clipboard.writeText(newApiKeyDisplay.value).then(() => {
+        showStatus('New API key copied to clipboard!', 'success');
+      });
+    }
+
+    async function loadApiStats() {
+      if (!currentUser) return;
+      
+      try {
+        const token = await getAuthToken();
+        if (!token) return;
+        
+        const response = await fetch(`${API_BASE_URL}/dashboard/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const userData = data.user;
+          const requests = userData.apiRequests || 0;
+          const success = userData.apiSuccess || 0;
+          const failed = userData.apiFailed || 0;
+          const spent = userData.totalSpent || 0;
+          
+          apiRequests.textContent = requests;
+          totalRequests.textContent = requests;
+          successfulRequests.textContent = success;
+          failedRequests.textContent = failed;
+          totalSpent.textContent = `₹${spent}`;
+          
+          if (requests > 0) {
+            const rate = Math.round((success / requests) * 100);
+            apiSuccessRate.textContent = `${rate}%`;
+          } else {
+            apiSuccessRate.textContent = '0%';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading API stats:', error);
+      }
+    }
+
+    // ========== SUPPORT FUNCTIONS ==========
+    function openWhatsAppSupport() {
+      window.open('https://wa.me/639079249283?text=Hello%20Happy%20OTP%20Support,%20I%20need%20help%20with%20your%20service.', '_blank');
+      closeSupportModal();
+    }
+
+    function openTelegramSupport() {
+      window.open('http://t.me/Happy_tracer_bot', '_blank');
+      closeSupportModal();
+    }
+
+    // ========== PAYMENT FUNCTIONS ==========
+    function openWhatsAppPayment() {
+      window.open('https://wa.me/639079249283?text=Please%20send%20qr%20and%20add%20my%20wallet%20balance%20i%20will%20payment%20you%20I%20like%20your%20service.', '_blank');
+      closeBalanceModal();
+    }
+
+    function openUPIPayment() {
+      window.open('https://payment-system-drab.vercel.app/', '_blank');
+      closeBalanceModal();
+    }
+
+    // ========== COUNTRY SELECTOR ==========
+    function initializeCountrySelector() {
+      let html = '';
+      
+      const countryGroups = {};
+      Object.entries(services).forEach(([key, service]) => {
+        if (!countryGroups[service.country]) {
+          countryGroups[service.country] = [];
+        }
+        countryGroups[service.country].push({ key, ...service });
+      });
+      
+      Object.entries(countryGroups).forEach(([country, serviceList]) => {
+        const firstService = serviceList[0];
+        html += `
+          <div class="country-group mb-3">
+            <div class="font-bold mb-2 flex items-center gap-2" style="color: var(--primary-green);">
+              <span>${firstService.flag}</span>
+              <span>${country}</span>
+            </div>
+        `;
+        
+        serviceList.forEach(service => {
+          html += `
+            <div class="country-option mb-2 rounded p-3" data-key="${service.key}">
+              <div class="flex justify-between items-center">
+                <div>
+                  <div class="font-medium">${service.name}</div>
+                  <div class="text-sm text-gray-400">${service.country}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="font-bold" style="color: #00ff9d;">₹${service.price}</div>
+                  <button class="get-number-btn" data-key="${service.key}">
+                    Get Number
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `</div>`;
+      });
+      
+      countryOptions.innerHTML = html;
+      
+      document.querySelectorAll('.country-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+          if (!e.target.classList.contains('get-number-btn')) {
+            const key = this.getAttribute('data-key');
+            selectService(key);
+          }
+        });
+      });
+      
+      document.querySelectorAll('.get-number-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const key = this.getAttribute('data-key');
+          selectService(key);
+          getNumber();
+        });
+      });
+    }
+
+    function selectService(serviceKey) {
+      const service = services[serviceKey];
+      if (!service) return;
+      
+      selectedService = serviceKey;
+      selectedServicePrice = service.price;
+      
+      selectedFlag.textContent = service.flag;
+      selectedName.textContent = service.name;
+      selectedCountryName.textContent = service.country;
+      selectedPrice.textContent = `₹${service.price}`;
+      selectedCountryText.textContent = `${service.flag} ${service.country}`;
+      
+      selectedServiceEl.classList.remove('hidden');
+      buyBtn.disabled = false;
+      
+      document.querySelectorAll('.country-option').forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.getAttribute('data-key') === serviceKey) {
+          opt.classList.add('selected');
+        }
+      });
+      
+      countryDropdown.classList.remove('show');
+    }
+
+    // ========== GET NUMBER FUNCTION ==========
+    async function getNumber() {
+      if (!currentUser) {
+        showStatus('Please login first', 'error');
+        authModal.style.display = 'flex';
+        return;
+      }
+
+      if (!selectedService) {
+        showStatus('Please select a service first', 'error');
+        return;
+      }
+
+      if (!userApiKey) {
+        showStatus('API key not loaded. Please refresh page.', 'error');
+        return;
+      }
+
+      buyBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Buying...';
+      buyBtn.disabled = true;
+      
+      try {
+        // Use API key method
+        const response = await fetch(
+          `${API_BASE_URL}/getNumber?api_key=${userApiKey}&country=${encodeURIComponent(selectedService)}`
+        );
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          phoneNumber.textContent = data.number;
+          numberCountry.textContent = services[selectedService].country;
+          activeNumberSection.classList.remove('hidden');
+          noActiveNumber.style.display = 'none';
+          
+          currentId = data.id;
+          timerExpired = false;
+          activeNumberData = data;
+          
+          refreshOtpBtn.disabled = false;
+          cancelNumberBtn.disabled = false;
+          
+          startCountdown();
+          startAutoRefresh();
+          
+          await updateBalanceDisplay();
+          await loadPurchaseHistory();
+          
+          showStatus(`Virtual number purchased successfully! ₹${selectedServicePrice} deducted.`, 'success');
+        } else {
+          showStatus('Failed to get number: ' + (data.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        console.error('Error getting number:', error);
+        showStatus('Network error: ' + error.message, 'error');
+      } finally {
+        buyBtn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i> BUY NUMBER';
+        buyBtn.disabled = false;
+      }
+    }
+
+    // ========== OTP FUNCTIONS ==========
+    async function getOtp(isAutoRefresh = false) {
+      if (!currentId) return;
+      if (timerExpired) {
+        stopAutoRefresh();
+        return;
+      }
+
+      if (!isAutoRefresh) {
+        refreshOtpBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Checking...';
+        refreshOtpBtn.disabled = true;
+      }
+      
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/getOtp?api_key=${userApiKey}&id=${encodeURIComponent(currentId)}`
+        );
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          if (data.hasOtp && data.otp) {
+            const otpCodeValue = data.otp;
+            otpCode.textContent = otpCodeValue;
+            otpStatus.textContent = 'OTP Received!';
+            otpResult.classList.remove('hidden');
+            
+            stopAutoRefresh();
+            
+            if (countdownTimer) {
+              clearInterval(countdownTimer);
+              countdown.textContent = 'OTP Received!';
+              countdown.style.color = '#00ff9d';
+            }
+            
+            refreshOtpBtn.disabled = true;
+            cancelNumberBtn.disabled = true;
+            
+            await loadPurchaseHistory();
+            
+            if (!isAutoRefresh) {
+              showStatus(`OTP received successfully!`, 'success');
+            }
+          } else {
+            otpStatus.textContent = 'No OTP Received';
+            if (!isAutoRefresh) {
+              showStatus('No OTP received yet', 'info');
+            }
+          }
+        } else {
+          otpStatus.textContent = 'Error: ' + (data.error || 'Unknown error');
+          if (data.error && data.error.includes('Time expired')) {
+            resetUI();
+            showStatus('Time expired. Number auto-cancelled.', 'info');
+          }
+        }
+      } catch (error) {
+        console.error('Error getting OTP:', error);
+        otpStatus.textContent = 'Network error';
+      } finally {
+        if (!isAutoRefresh) {
+          refreshOtpBtn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i> Refresh OTP';
+          refreshOtpBtn.disabled = false;
+        }
+      }
+    }
+
+    // ========== CANCEL NUMBER ==========
+    async function cancelNumber() {
+      if (!currentId) {
+        showStatus('No active number to cancel', 'error');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to cancel this number?')) {
+        return;
+      }
+
+      cancelNumberBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Cancelling...';
+      cancelNumberBtn.disabled = true;
+      
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/cancelNumber?api_key=${userApiKey}&id=${encodeURIComponent(currentId)}`
+        );
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          stopAutoRefresh();
+          resetUI();
+          
+          await updateBalanceDisplay();
+          await loadPurchaseHistory();
+          
+          if (data.refundAmount > 0) {
+            showStatus(`Number cancelled successfully. ₹${data.refundAmount} refunded.`, 'success');
+          } else {
+            showStatus(`Number cancelled successfully.`, 'success');
+          }
+        } else {
+          showStatus('Failed to cancel: ' + (data.error || 'Unknown error'), 'error');
+          if (data.error && data.error.includes('OTP already received')) {
+            otpCode.textContent = data.otp || '-';
+            otpStatus.textContent = 'OTP Already Received';
+            otpResult.classList.remove('hidden');
+          }
+        }
+      } catch (error) {
+        console.error('Error cancelling number:', error);
+        showStatus('Network error', 'error');
+      } finally {
+        cancelNumberBtn.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Cancel';
+        cancelNumberBtn.disabled = false;
+      }
+    }
+
+    // ========== TIMER FUNCTIONS ==========
+    function startCountdown() {
+      timeLeft = 900;
+      updateCountdownDisplay();
+      
+      if (countdownTimer) clearInterval(countdownTimer);
+      
+      countdownTimer = setInterval(() => {
+        timeLeft--;
+        updateCountdownDisplay();
+        
+        if (timeLeft <= 0) {
+          clearInterval(countdownTimer);
+          timerExpired = true;
+          countdown.textContent = 'Time Expired!';
+          countdown.style.color = '#ff0040';
+          
+          refreshOtpBtn.disabled = true;
+          cancelNumberBtn.disabled = true;
+          
+          stopAutoRefresh();
+          showStatus('Time expired. Number auto-cancelled.', 'info');
+        }
+      }, 1000);
+    }
+
+    function updateCountdownDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      countdown.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // ========== AUTO REFRESH ==========
+    function startAutoRefresh() {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      
+      autoRefreshIndicator.classList.remove('hidden');
+      
+      autoRefreshInterval = setInterval(async () => {
+        if (currentId && !timerExpired) {
+          await getOtp(true);
+        } else {
+          stopAutoRefresh();
+        }
+      }, 10000);
+    }
+
+    function stopAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+      autoRefreshIndicator.classList.add('hidden');
+    }
+
+    // ========== LOAD PURCHASE HISTORY ==========
+    async function loadPurchaseHistory() {
+      if (!currentUser) return;
+      
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/getHistory?api_key=${userApiKey}`
+        );
+        
+        const data = await response.json();
+        
+        if (data.success && data.history && data.history.length > 0) {
+          noHistoryRow.style.display = 'none';
+          
+          let html = '';
+          data.history.slice(0, 10).forEach(trans => {
+            const date = new Date(trans.timestamp);
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let statusColor = 'gray';
+            let statusText = trans.status;
+            if (trans.status === 'success') statusColor = '#00ff9d';
+            if (trans.status === 'cancelled') statusColor = '#ff0040';
+            if (trans.status === 'failed') statusColor = '#ffa500';
+            if (trans.status === 'active') statusColor = '#00a2ff';
+            if (trans.status === 'expired') statusColor = '#ffa500';
+            
+            html += `
+              <tr class="table-row">
+                <td class="p-3">
+                  <div class="flex items-center gap-2">
+                    <span>${trans.flag || '🏳️'}</span>
+                    <span>${trans.country || 'Unknown'}</span>
+                  </div>
+                </td>
+                <td class="p-3 font-mono">${trans.number || 'N/A'}</td>
+                <td class="p-3">${trans.service || 'Unknown'}</td>
+                <td class="p-3 font-bold font-mono" style="color: #00ff9d;">${trans.otp || '-'}</td>
+                <td class="p-3 text-gray-400">${timeStr}</td>
+                <td class="p-3">
+                  <span class="px-2 py-1 rounded text-xs" style="background: ${statusColor}20; color: ${statusColor}; border: 1px solid ${statusColor}40;">
+                    ${statusText}
+                  </span>
+                </td>
+              </tr>
+            `;
+          });
+          
+          historyTableBody.innerHTML = html;
+        } else {
+          noHistoryRow.style.display = 'table-row';
+        }
+        
+        // Check for active number
+        if (data.success && data.active) {
+          activeNumberData = data.active;
+          currentId = data.active.id;
+          phoneNumber.textContent = data.active.number;
+          numberCountry.textContent = services[data.active.service]?.country || 'Unknown';
+          activeNumberSection.classList.remove('hidden');
+          noActiveNumber.style.display = 'none';
+          
+          // Calculate time left
+          const timeElapsed = Date.now() - data.active.startTime;
+          timeLeft = Math.max(0, Math.floor((15 * 60 * 1000 - timeElapsed) / 1000));
+          
+          if (timeLeft > 0) {
+            startCountdown();
+            startAutoRefresh();
+          } else {
+            countdown.textContent = 'Time Expired!';
+            countdown.style.color = '#ff0040';
+            refreshOtpBtn.disabled = true;
+            cancelNumberBtn.disabled = true;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading history:', error);
+        noHistoryRow.style.display = 'table-row';
+      }
+    }
+
+    function refreshHistory() {
+      if (currentUser) {
+        loadPurchaseHistory();
+        showStatus('History refreshed', 'info')
+      }
+    }
+
+    function openWhatsAppSupport() {
+    window.open('https://wa.me/639079249283', '_blank');
+    closeSupportModal();
+}
+
+    function openTelegramSupport() {
+    window.open('http://t.me/Happy_tracer_bot', '_blank');
+    closeSupportModal();
+}
+
+    function openUPIPayment() {
+    window.open('https://wpotp.vercel.app/Payment.html', '_blank');
+    closeBalanceModal();
+}
+// API Documentation link function
+function openApiDocs() {
+    window.open('https://wpotp.vercel.app/api-docs.html', '_blank');
+}
+    
+    // ========== UI FUNCTIONS ==========
+    function resetUI() {
+      activeNumberSection.classList.add('hidden');
+      noActiveNumber.style.display = 'block';
+      otpResult.classList.add('hidden');
+      
+      if (countdownTimer) clearInterval(countdownTimer);
+      stopAutoRefresh();
+      
+      currentId = null;
+      timerExpired = false;
+      activeNumberData = null;
+      refreshOtpBtn.disabled = false;
+      cancelNumberBtn.disabled = false;
+    }
+
+    function resetTransaction() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+      stopAutoRefresh();
+    }
+
+    async function updateBalanceDisplay() {
+      if (!currentUser) return;
+      
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/getBalance?api_key=${userApiKey}`
+        );
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const balance = data.balance;
+          profileBalance.textContent = `₹${balance}`;
+          balanceDisplay.textContent = `₹${balance}`;
+        }
+      } catch (error) {
+        console.error('Error updating balance:', error);
+      }
+    }
+
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message';
+      
+      if (type === 'success') statusMessage.classList.add('status-success');
+      else if (type === 'error') statusMessage.classList.add('status-error');
+      else if (type === 'info') statusMessage.classList.add('status-info');
+      
+      statusMessage.classList.remove('hidden');
+      
+      setTimeout(() => {
+        statusMessage.classList.add('hidden');
+      }, 5000);
+    }
+
+    // ========== MODAL FUNCTIONS ==========
+    function openApiKeyModal() {
+    console.log("Opening API Key Modal");
+    document.getElementById('apiKeyModal').style.display = 'flex';
+    document.getElementById('apiKeyModal').classList.add('show');
+    document.getElementById('profileDropdown').classList.remove('show');
+}
+
+    function closeApiKeyModal() {
+    document.getElementById('apiKeyModal').style.display = 'none';
+    document.getElementById('apiKeyModal').classList.remove('show');
+}
+
+    function copyApiKey() {
+      navigator.clipboard.writeText(apiKeyDisplay.value).then(() => {
+        showStatus('API key copied to clipboard!', 'success');
+      });
+    }
+
+    function openSupportModal() {
+    console.log("Opening Support Modal");
+    document.getElementById('supportModal').style.display = 'flex';
+    document.getElementById('supportModal').classList.add('show');
+}
+
+    function closeSupportModal() {
+    document.getElementById('supportModal').style.display = 'none';
+    document.getElementById('supportModal').classList.remove('show');
+}
+
+    function openBalanceModal() {
+    console.log("Opening Balance Modal");
+    document.getElementById('balanceModal').style.display = 'flex';
+    document.getElementById('balanceModal').classList.add('show');
+    document.getElementById('profileDropdown').classList.remove('show');
+}
+
+    function closeBalanceModal() {
+    document.getElementById('balanceModal').style.display = 'none';
+    document.getElementById('balanceModal').classList.remove('show');
+}
+
+    function openAPIDocs() {
+      window.open('api-docs.html', '_blank');
+      profileDropdown.classList.remove('show');
+    }
+
+    // ========== FIREBASE AUTH LISTENER ==========
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        
+        try {
+          const snapshot = await database.ref('users/' + user.uid).once('value');
+          const userData = snapshot.val();
+          
+          if (userData) {
+            profileName.textContent = userData.name || 'User';
+            profileEmail.textContent = user.email;
+            profileBalance.textContent = `₹${userData.wallet || 0}`;
+            balanceDisplay.textContent = `₹${userData.wallet || 0}`;
+          }
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+        
+        authModal.style.display = 'none';
+        
+        await loadApiKey();
+        await updateBalanceDisplay();
+        await loadPurchaseHistory();
+        await loadApiStats();
+        
+        showStatus('Login successful!', 'success');
+      } else {
+        currentUser = null;
+        authModal.style.display = 'flex';
+        resetTransaction();
+      }
+    });
+
+    // ========== EVENT LISTENERS ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeCountrySelector();
+      selectService('philippines_51');
+      
+      showSignup.addEventListener('click', () => showAuthMode('signup'));
+      showLogin.addEventListener('click', () => showAuthMode('login'));
+      
+      authLoginBtn.addEventListener('click', signIn);
+      authSignupBtn.addEventListener('click', signUp);
+      
+      countrySelectorBtn.addEventListener('click', () => {
+        countryDropdown.classList.toggle('show');
+        if (countryDropdown.classList.contains('show')) {
+          countrySearch.focus();
+        }
+      });
+      
+      countrySearch.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        document.querySelectorAll('.country-option').forEach(option => {
+          const text = option.textContent.toLowerCase();
+          option.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        });
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.country-selector-btn') && !e.target.closest('.country-dropdown')) {
+          countryDropdown.classList.remove('show');
+        }
+        if (!e.target.closest('#profileBtn')) {
+          profileDropdown.classList.remove('show');
+        }
+        if (!e.target.closest('.modal-content') && !e.target.closest('.api-key-box')) {
+          apiKeyModal.classList.remove('show');
+          document.getElementById('supportModal').classList.remove('show');
+          document.getElementById('balanceModal').classList.remove('show');
+          document.getElementById('changeKeyModal').classList.remove('show');
+          document.getElementById('newKeyModal').classList.remove('show');
+        }
+      });
+      
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('show');
+      });
+      
+      resetUI();
+      autoRefreshIndicator.classList.add('hidden');
+      showAuthMode('login');
+    });
+
+      </script>
+
+<style>
+</script>
+
+<style>
+/* API USAGE BOX FIX - REMOVE MAX-HEIGHT */
+.api-example .bg-black {
+    padding: 8px !important;
+    /* max-height: 100px !important; ← YE LINE HATA DO */
+    height: auto !important;
+    min-height: 80px !important;
+    overflow: visible !important; /* SCROLL HATA DO */
+}
+
+.api-example code {
+    font-size: 9px !important;
+    line-height: 1.3 !important;
+    word-break: break-all !important;
+    white-space: pre-wrap !important;
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+}
+
+/* WARNING TEXT */
+.api-example .text-red-500 {
+    font-size: 10px !important;
+    padding: 5px !important;
+    margin-bottom: 6px !important;
+}
+
+/* MODAL SIZE */
+@media (max-width: 768px) {
+    #apiKeyModal .modal-content {
+        max-width: 95% !important;
+        width: 360px !important;
+        padding: 15px !important;
+        margin: 10px !important;
+    }
+    
+    #apiKeyDisplay {
+        font-size: 11px !important;
+        padding: 5px !important;
+    }
+}
+
+/* FUNCTION FOR API DOCS */
+<script>
+function openApiDocs() {
+    window.open('https://wpotp.vercel.app/api-docs.html', '_blank');
+}
+</script>
+</style>
+
+</body>
+</html>
