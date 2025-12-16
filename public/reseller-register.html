@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Become a Reseller - Happy OTP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  
+  <style>
+    :root {
+      --primary-green: #00ff99;
+      --dark-green: #008b45;
+      --bg-dark: #0a0a0a;
+      --bg-light: #121212;
+      --bg-lighter: #1a1a1a;
+      --border-color: #004d26;
+      --text-glow: 0 0 8px #00ff99, 0 0 12px #00ff99;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #e5e7eb;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a0a0a 0%, #004d26 100%);
+    }
+
+    .header-container {
+      background: linear-gradient(to right, #0a0a0a, #004d26, #0a0a0a);
+      border-bottom: 2px solid var(--primary-green);
+      box-shadow: 0 0 20px rgba(0, 255, 153, 0.2);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .whatsapp-icon {
+      color: var(--primary-green);
+      font-size: 2.5rem;
+      filter: drop-shadow(0 0 10px var(--primary-green));
+      animation: pulse-icon 2s infinite;
+    }
+
+    @keyframes pulse-icon {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .premium-title {
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--primary-green);
+      text-shadow: var(--text-glow);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { text-shadow: var(--text-glow); }
+      50% { text-shadow: 0 0 15px #00ff99, 0 0 20px #00ff99; }
+    }
+
+    .card {
+      background: var(--bg-light);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .input-field {
+      background: #000000;
+      border: 2px solid var(--primary-green);
+      color: #00ff99;
+      padding: 14px;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    .input-field::placeholder {
+      color: #88ff88;
+      opacity: 0.8;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #ffff00;
+      box-shadow: 0 0 10px #00ff99;
+      color: #ffff00;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary-green), var(--dark-green));
+      color: black;
+      border: none;
+      border-radius: 8px;
+      padding: 15px 30px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0, 255, 153, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 255, 153, 0.5);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .commission-card {
+      background: rgba(0, 255, 153, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+
+    .status-success {
+      background: rgba(0, 255, 157, 0.2);
+      color: #00ff9d;
+      border: 1px solid #00ff9d;
+    }
+
+    .status-error {
+      background: rgba(255, 0, 64, 0.2);
+      color: #ff0040;
+      border: 1px solid #ff0040;
+    }
+
+    .status-info {
+      background: rgba(0, 162, 255, 0.2);
+      color: #00a2ff;
+      border: 1px solid #00a2ff;
+    }
+
+    .copy-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .copy-input {
+      background: transparent;
+      border: none;
+      color: var(--primary-green);
+      font-family: monospace;
+      flex: 1;
+      outline: none;
+    }
+
+    .copy-btn {
+      background: var(--primary-green);
+      color: black;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .copy-btn:hover {
+      opacity: 0.9;
+    }
+
+    .step-card {
+      background: var(--bg-lighter);
+      border-left: 4px solid var(--primary-green);
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .badge {
+      background: linear-gradient(to right, #ffd700, #ffa500);
+      color: black;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="p-4">
+
+  <!-- Firebase Initialization -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyArJqR7qRvDqz76kc4y6Wpa4Zu2JCcTQgA",
+      authDomain: "royal-5b527.firebaseapp.com",
+      databaseURL: "https://royal-5b527-default-rtdb.firebaseio.com",
+      projectId: "royal-5b527",
+      storageBucket: "royal-5b527.firebasestorage.app",
+      messagingSenderId: "693286904326",
+      appId: "1:693286904326:web:9ae26226c4e92942b85987",
+      measurementId: "G-6M7EGTPQPX"
+    };
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log('Firebase initialized successfully');
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+    }
+
+    const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  </script>
+
+  <!-- Main Container -->
+  <div class="max-w-5xl mx-auto space-y-6">
+    
+    <!-- HEADER -->
+    <header class="header-container p-4 rounded-xl">
+      <div class="flex justify-between items-center">
+        <!-- Logo & Title -->
+        <div class="logo-container flex items-center gap-3">
+          <i class="fab fa-whatsapp whatsapp-icon"></i>
+          <div>
+            <h1 class="premium-title text-2xl sm:text-3xl">HAPPY OTP RESELLER PROGRAM</h1>
+            <p class="text-gray-400 text-sm">Earn Commissions by Referring Customers</p>
+          </div>
+        </div>
+        
+        <!-- Back to Home Button -->
+        <a href="/" class="btn-primary px-6">
+          <i class="fas fa-home mr-2"></i>
+          Back to Home
+        </a>
+      </div>
+    </header>
+
+    <!-- STATUS MESSAGE -->
+    <div id="statusMessage" class="status-message hidden"></div>
+
+    <!-- LOGIN/REGISTER SECTION -->
+    <div id="authSection" class="card">
+      <h2 class="text-2xl font-bold mb-6" style="color: var(--primary-green);">
+        <i class="fas fa-user-shield mr-2"></i>
+        First, Login or Register
+      </h2>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- Login Form -->
+        <div>
+          <h3 class="text-xl font-bold mb-4" style="color: var(--primary-green);">
+            <i class="fas fa-sign-in-alt mr-2"></i>
+            Login
+          </h3>
+          <div class="space-y-4">
+            <input type="email" id="loginEmail" class="input-field" placeholder="Email Address">
+            <input type="password" id="loginPassword" class="input-field" placeholder="Password">
+            <button id="loginBtn" class="btn-primary w-full py-3">
+              <i class="fas fa-sign-in-alt mr-2"></i>
+              LOGIN
+            </button>
+          </div>
+        </div>
+        
+        <!-- Register Form -->
+        <div>
+          <h3 class="text-xl font-bold mb-4" style="color: var(--primary-green);">
+            <i class="fas fa-user-plus mr-2"></i>
+            Register
+          </h3>
+          <div class="space-y-4">
+            <input type="text" id="registerName" class="input-field" placeholder="Full Name">
+            <input type="email" id="registerEmail" class="input-field" placeholder="Email Address">
+            <input type="password" id="registerPassword" class="input-field" placeholder="Create Password">
+            <button id="registerBtn" class="btn-primary w-full py-3">
+              <i class="fas fa-user-plus mr-2"></i>
+              CREATE ACCOUNT
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="authStatus" class="mt-6 p-4 rounded-lg hidden"></div>
+    </div>
+
+    <!-- RESELLER REGISTRATION FORM (Hidden Initially) -->
+    <div id="resellerForm" class="card hidden">
+      <h2 class="text-2xl font-bold mb-6" style="color: var(--primary-green);">
+        <i class="fas fa-crown mr-2"></i>
+        Become a Reseller
+      </h2>
+      
+      <!-- Commission Info -->
+      <div class="commission-card">
+        <h3 class="text-lg font-bold mb-3" style="color: var(--primary-green);">
+          <i class="fas fa-money-bill-wave mr-2"></i>
+          Commission Structure
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div class="text-center p-4 bg-black bg-opacity-30 rounded-lg">
+            <div class="text-3xl font-bold" style="color: var(--primary-green);">5-30%</div>
+            <div class="text-sm text-gray-400">Commission Rate</div>
+          </div>
+          <div class="text-center p-4 bg-black bg-opacity-30 rounded-lg">
+            <div class="text-3xl font-bold" style="color: var(--primary-green);">₹0</div>
+            <div class="text-sm text-gray-400">Setup Fee</div>
+          </div>
+          <div class="text-center p-4 bg-black bg-opacity-30 rounded-lg">
+            <div class="text-3xl font-bold" style="color: var(--primary-green);">Instant</div>
+            <div class="text-sm text-gray-400">Payment</div>
+          </div>
+        </div>
+        
+        <ul class="space-y-2 text-gray-300">
+          <li><i class="fas fa-check-circle text-green-500 mr-2"></i> Earn on every purchase made through your link</li>
+          <li><i class="fas fa-check-circle text-green-500 mr-2"></i> Real-time wallet updates</li>
+          <li><i class="fas fa-check-circle text-green-500 mr-2"></i> Your branded OTP panel</li>
+          <li><i class="fas fa-check-circle text-green-500 mr-2"></i> 24/7 Support</li>
+          <li><i class="fas fa-check-circle text-green-500 mr-2"></i> No minimum withdrawal</li>
+        </ul>
+      </div>
+      
+      <!-- Reseller Form -->
+      <div class="space-y-6 mt-6">
+        <div>
+          <label class="block text-gray-300 mb-2">
+            <i class="fas fa-store mr-2"></i>
+            Your Business Name
+          </label>
+          <input type="text" id="businessName" class="input-field" placeholder="e.g., Rahul OTP Services">
+          <p class="text-sm text-gray-500 mt-1">This will appear as "YourName OTP Panel" for your customers</p>
+        </div>
+        
+        <div>
+          <label class="block text-gray-300 mb-2">
+            <i class="fas fa-percentage mr-2"></i>
+            Commission Percentage
+          </label>
+          <select id="commissionPercent" class="input-field">
+            <option value="10">10% (Recommended)</option>
+            <option value="15">15%</option>
+            <option value="20">20%</option>
+            <option value="25">25%</option>
+            <option value="30">30% (Maximum)</option>
+          </select>
+          <p class="text-sm text-gray-500 mt-1">Higher commission = Higher prices for your customers</p>
+        </div>
+        
+        <div class="step-card">
+          <h4 class="font-bold mb-2" style="color: var(--primary-green);">
+            <i class="fas fa-lightbulb mr-2"></i>
+            How It Works:
+          </h4>
+          <ol class="list-decimal pl-5 space-y-2 text-sm text-gray-300">
+            <li>You get a unique referral link</li>
+            <li>Share link with your customers</li>
+            <li>When they purchase, you earn commission</li>
+            <li>Commission added to your wallet instantly</li>
+            <li>Withdraw anytime to your bank/UPI</li>
+          </ol>
+        </div>
+        
+        <button id="registerResellerBtn" class="btn-primary w-full py-4 text-lg">
+          <i class="fas fa-crown mr-2"></i>
+          BECOME RESELLER NOW
+        </button>
+      </div>
+    </div>
+
+    <!-- SUCCESS SECTION (Hidden Initially) -->
+    <div id="successSection" class="card hidden">
+      <div class="text-center mb-6">
+        <i class="fas fa-check-circle text-6xl mb-4" style="color: var(--primary-green);"></i>
+        <h2 class="text-2xl font-bold" style="color: var(--primary-green);">
+          🎉 Congratulations! You're Now a Reseller
+        </h2>
+        <p class="text-gray-400">Start earning commissions immediately</p>
+      </div>
+      
+      <!-- Reseller Details -->
+      <div class="space-y-6">
+        <div class="commission-card">
+          <h3 class="text-lg font-bold mb-3" style="color: var(--primary-green);">
+            <i class="fas fa-id-card mr-2"></i>
+            Your Reseller Details
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div class="text-sm text-gray-500">Reseller ID</div>
+              <div class="text-xl font-bold" style="color: var(--primary-green);" id="resellerId">-</div>
+            </div>
+            <div>
+              <div class="text-sm text-gray-500">Commission Rate</div>
+              <div class="text-xl font-bold" style="color: var(--primary-green);" id="resellerCommission">-</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Your Referral Link -->
+        <div>
+          <h3 class="text-lg font-bold mb-3" style="color: var(--primary-green);">
+            <i class="fas fa-link mr-2"></i>
+            Your Referral Link
+          </h3>
+          <div class="copy-box">
+            <input type="text" id="referralLink" class="copy-input" readonly>
+            <button onclick="copyReferralLink()" class="copy-btn">
+              <i class="fas fa-copy"></i> Copy
+            </button>
+          </div>
+          <p class="text-sm text-gray-500 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>
+            Share this link with your customers. All purchases through this link will earn you commission.
+          </p>
+        </div>
+        
+        <!-- Quick Links -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <a href="/" id="yourPanelLink" target="_blank" class="btn-primary text-center py-3">
+            <i class="fas fa-external-link-alt mr-2"></i>
+            View Your Panel
+          </a>
+          <button onclick="copyReferralLink()" class="btn-primary py-3">
+            <i class="fas fa-share-alt mr-2"></i>
+            Share Link
+          </button>
+        </div>
+        
+        <!-- Next Steps -->
+        <div class="step-card">
+          <h4 class="font-bold mb-3" style="color: var(--primary-green);">
+            <i class="fas fa-rocket mr-2"></i>
+            Next Steps:
+          </h4>
+          <div class="space-y-3">
+            <div class="flex items-start gap-3">
+              <span class="badge">1</span>
+              <div>
+                <div class="font-bold">Share Your Link</div>
+                <div class="text-sm text-gray-400">Share on WhatsApp, Telegram, Social Media</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="badge">2</span>
+              <div>
+                <div class="font-bold">Track Sales</div>
+                <div class="text-sm text-gray-400">Check your dashboard for real-time updates</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="badge">3</span>
+              <div>
+                <div class="font-bold">Earn Commission</div>
+                <div class="text-sm text-gray-400">Commission added to wallet instantly</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="badge">4</span>
+              <div>
+                <div class="font-bold">Withdraw Earnings</div>
+                <div class="text-sm text-gray-400">Withdraw anytime to your bank/UPI</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW IT WORKS SECTION -->
+    <div class="card">
+      <h2 class="text-2xl font-bold mb-6" style="color: var(--primary-green);">
+        <i class="fas fa-question-circle mr-2"></i>
+        How The Reseller Program Works
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="text-center p-4">
+          <div class="text-4xl mb-3" style="color: var(--primary-green);">1</div>
+          <h4 class="font-bold mb-2">Register</h4>
+          <p class="text-sm text-gray-400">Sign up as a reseller in minutes</p>
+        </div>
+        <div class="text-center p-4">
+          <div class="text-4xl mb-3" style="color: var(--primary-green);">2</div>
+          <h4 class="font-bold mb-2">Get Link</h4>
+          <p class="text-sm text-gray-400">Receive your unique referral link</p>
+        </div>
+        <div class="text-center p-4">
+          <div class="text-4xl mb-3" style="color: var(--primary-green);">3</div>
+          <h4 class="font-bold mb-2">Share</h4>
+          <p class="text-sm text-gray-400">Share link with your customers</p>
+        </div>
+        <div class="text-center p-4">
+          <div class="text-4xl mb-3" style="color: var(--primary-green);">4</div>
+          <h4 class="font-bold mb-2">Earn</h4>
+          <p class="text-sm text-gray-400">Earn commission on every purchase</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div class="card">
+      <h2 class="text-2xl font-bold mb-6" style="color: var(--primary-green);">
+        <i class="fas fa-comments mr-2"></i>
+        Frequently Asked Questions
+      </h2>
+      
+      <div class="space-y-4">
+        <div class="border-b border-border-color pb-4">
+          <h4 class="font-bold mb-2" style="color: var(--primary-green);">Q: How much commission do I earn?</h4>
+          <p class="text-gray-300">A: You can earn 5-30% commission on every purchase made through your link.</p>
+        </div>
+        
+        <div class="border-b border-border-color pb-4">
+          <h4 class="font-bold mb-2" style="color: var(--primary-green);">Q: When do I get paid?</h4>
+          <p class="text-gray-300">A: Commission is added to your wallet instantly after each purchase.</p>
+        </div>
+        
+        <div class="border-b border-border-color pb-4">
+          <h4 class="font-bold mb-2" style="color: var(--primary-green);">Q: How do customers use my link?</h4>
+          <p class="text-gray-300">A: They simply click your link, register, and make purchases normally.</p>
+        </div>
+        
+        <div class="pb-4">
+          <h4 class="font-bold mb-2" style="color: var(--primary-green);">Q: Is there any cost to become a reseller?</h4>
+          <p class="text-gray-300">A: No, it's completely free to join our reseller program.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // DOM Elements
+    const authSection = document.getElementById('authSection');
+    const resellerForm = document.getElementById('resellerForm');
+    const successSection = document.getElementById('successSection');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const registerResellerBtn = document.getElementById('registerResellerBtn');
+    const authStatus = document.getElementById('authStatus');
+    const statusMessage = document.getElementById('statusMessage');
+    const resellerIdElement = document.getElementById('resellerId');
+    const resellerCommissionElement = document.getElementById('resellerCommission');
+    const referralLinkElement = document.getElementById('referralLink');
+    const yourPanelLink = document.getElementById('yourPanelLink');
+
+    // Current user
+    let currentUser = null;
+    let userToken = null;
+
+    // API Base URL
+    const API_BASE_URL = window.location.origin + '/api';
+
+    // Status display function
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message';
+      statusMessage.classList.add(type === 'success' ? 'status-success' : 
+                                 type === 'error' ? 'status-error' : 'status-info');
+      statusMessage.classList.remove('hidden');
+      
+      setTimeout(() => {
+        statusMessage.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Auth status display
+    function showAuthStatus(message, type) {
+      authStatus.textContent = message;
+      authStatus.className = 'mt-4 p-3 rounded-lg';
+      authStatus.classList.add(type === 'success' ? 'status-success' : 'status-error');
+      authStatus.classList.remove('hidden');
+    }
+
+    // Get auth token
+    async function getAuthToken() {
+      if (!currentUser) return null;
+      try {
+        return await currentUser.getIdToken();
+      } catch (error) {
+        console.error('Error getting auth token:', error);
+        return null;
+      }
+    }
+
+    // Login function
+    async function login() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!email || !password) {
+        showAuthStatus('Please enter email and password', 'error');
+        return;
+      }
+      
+      try {
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Logging in...';
+        loginBtn.disabled = true;
+        
+        await auth.signInWithEmailAndPassword(email, password);
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        showAuthStatus(getFirebaseError(error), 'error');
+        
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> LOGIN';
+        loginBtn.disabled = false;
+      }
+    }
+
+    // Register function
+    async function register() {
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      
+      if (!name || !email || !password) {
+        showAuthStatus('Please fill all fields', 'error');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showAuthStatus('Password must be at least 6 characters', 'error');
+        return;
+      }
+      
+      try {
+        registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating account...';
+        registerBtn.disabled = true;
+        
+        const response = await fetch(`${API_BASE_URL}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            name: name
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showAuthStatus('Account created successfully! Logging in...', 'success');
+          
+          // Auto login after signup
+          setTimeout(async () => {
+            try {
+              await auth.signInWithEmailAndPassword(email, password);
+            } catch (loginError) {
+              console.error('Auto login failed:', loginError);
+            }
+          }, 1000);
+          
+        } else {
+          showAuthStatus(data.error || 'Registration failed', 'error');
+        }
+        
+      } catch (error) {
+        console.error('Signup error:', error);
+        showAuthStatus('Network error: ' + error.message, 'error');
+      } finally {
+        registerBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> CREATE ACCOUNT';
+        registerBtn.disabled = false;
+      }
+    }
+
+    // Firebase error messages
+    function getFirebaseError(error) {
+      const msg = error.message || '';
+      if (msg.includes('auth/wrong-password')) return 'Wrong password';
+      if (msg.includes('auth/user-not-found')) return 'User not found';
+      if (msg.includes('auth/email-already-in-use')) return 'Email already registered';
+      if (msg.includes('auth/weak-password')) return 'Weak password';
+      if (msg.includes('auth/invalid-email')) return 'Invalid email';
+      return error.message || 'Authentication failed';
+    }
+
+    // Register as reseller
+    async function registerReseller() {
+      const businessName = document.getElementById('businessName').value.trim();
+      const commissionPercent = document.getElementById('commissionPercent').value;
+      
+      if (!businessName) {
+        showStatus('Please enter your business name', 'error');
+        return;
+      }
+      
+      try {
+        registerResellerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Registering...';
+        registerResellerBtn.disabled = true;
+        
+        const token = await getAuthToken();
+        if (!token) {
+          showStatus('Authentication failed', 'error');
+          return;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/reseller/register`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: businessName,
+            commissionPercent: parseInt(commissionPercent)
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Show success section
+          authSection.classList.add('hidden');
+          resellerForm.classList.add('hidden');
+          successSection.classList.remove('hidden');
+          
+          // Display reseller details
+          resellerIdElement.textContent = data.resellerId;
+          resellerCommissionElement.textContent = data.commissionPercent + '%';
+          
+          // Set referral link
+          const referralLink = `${window.location.origin}/?ref=${data.resellerId}`;
+          referralLinkElement.value = referralLink;
+          yourPanelLink.href = referralLink;
+          
+          showStatus('Reseller account created successfully!', 'success');
+        } else {
+          showStatus('Failed to create reseller: ' + data.error, 'error');
+        }
+        
+      } catch (error) {
+        console.error('Reseller registration error:', error);
+        showStatus('Network error: ' + error.message, 'error');
+      } finally {
+        registerResellerBtn.innerHTML = '<i class="fas fa-crown mr-2"></i> BECOME RESELLER NOW';
+        registerResellerBtn.disabled = false;
+      }
+    }
+
+    // Copy referral link
+    function copyReferralLink() {
+      navigator.clipboard.writeText(referralLinkElement.value).then(() => {
+        showStatus('Referral link copied to clipboard!', 'success');
+      }).catch(err => {
+        showStatus('Failed to copy link', 'error');
+      });
+    }
+
+    // Check if user is already a reseller
+    async function checkResellerStatus() {
+      try {
+        const token = await getAuthToken();
+        if (!token) return false;
+        
+        const response = await fetch(`${API_BASE_URL}/reseller/info`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.reseller) {
+          // User is already a reseller, show success section
+          authSection.classList.add('hidden');
+          resellerForm.classList.add('hidden');
+          successSection.classList.remove('hidden');
+          
+          // Display existing reseller details
+          resellerIdElement.textContent = data.reseller.id;
+          resellerCommissionElement.textContent = data.reseller.commissionPercent + '%';
+          
+          // Set referral link
+          const referralLink = data.reseller.referralLink || `${window.location.origin}/?ref=${data.reseller.id}`;
+          referralLinkElement.value = referralLink;
+          yourPanelLink.href = referralLink;
+          
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Check reseller status error:', error);
+        return false;
+      }
+    }
+
+    // Firebase auth state listener
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        
+        // Check if user is already a reseller
+        const isReseller = await checkResellerStatus();
+        
+        if (!isReseller) {
+          // Show reseller form
+          authSection.classList.add('hidden');
+          resellerForm.classList.remove('hidden');
+          successSection.classList.add('hidden');
+        }
+        
+        showStatus('Login successful!', 'success');
+      } else {
+        currentUser = null;
+        // Show auth section
+        authSection.classList.remove('hidden');
+        resellerForm.classList.add('hidden');
+        successSection.classList.add('hidden');
+      }
+    });
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      loginBtn.addEventListener('click', login);
+      registerBtn.addEventListener('click', register);
+      registerResellerBtn.addEventListener('click', registerReseller);
+      
+      // Allow Enter key to submit forms
+      document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') login();
+      });
+      
+      document.getElementById('registerPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') register();
+      });
+      
+      document.getElementById('commissionPercent').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') registerReseller();
+      });
+    });
+
+    // Share link function
+    function shareLink() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'OTP Services',
+          text: 'Get virtual numbers for WhatsApp verification',
+          url: referralLinkElement.value
+        });
+      } else {
+        copyReferralLink();
+      }
+    }
+
+    // Audio for success (optional)
+    function playSuccessSound() {
+      const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
+      audio.volume = 0.5;
+      audio.play();
+    }
+  </script>
+</body>
+</html>
