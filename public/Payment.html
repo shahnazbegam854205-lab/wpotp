@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Balance - Happy OTP Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #00ff99;
+      --dark-green: #008b45;
+      --bg-dark: #0a0a0a;
+      --bg-light: #121212;
+      --border-color: #004d26;
+      --text-glow: 0 0 8px #00ff99;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #e5e7eb;
+    }
+    
+    .container {
+      background: var(--bg-light);
+      border-radius: 20px;
+      border: 2px solid var(--border-color);
+      box-shadow: 0 0 40px rgba(0, 255, 153, 0.3);
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: linear-gradient(45deg, var(--primary-green), var(--dark-green));
+      z-index: -1;
+      filter: blur(25px);
+      opacity: 0.15;
+    }
+    
+    .logo {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 25px;
+      color: black;
+      font-size: 42px;
+      font-weight: bold;
+      box-shadow: 0 0 20px var(--primary-green);
+    }
+    
+    h1 {
+      color: var(--primary-green);
+      margin-bottom: 15px;
+      font-size: 32px;
+      text-shadow: var(--text-glow);
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    
+    .subtitle {
+      color: #aaa;
+      margin-bottom: 35px;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    .input-group {
+      margin-bottom: 30px;
+      text-align: left;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 12px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+    }
+    
+    /* BIG INPUT FIELDS */
+    input {
+      width: 100%;
+      padding: 25px 20px;
+      font-size: 26px;
+      font-weight: 700;
+      border-radius: 12px;
+      border: 2px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      transition: all 0.3s;
+      text-align: center;
+      letter-spacing: 1px;
+      height: 70px;
+    }
+    
+    input::placeholder {
+      color: #666;
+      font-size: 20px;
+      font-weight: normal;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--primary-green);
+      box-shadow: 0 0 20px rgba(0, 255, 153, 0.8);
+      background: rgba(0, 0, 0, 0.6);
+    }
+    
+    /* BIG BUTTONS */
+    button {
+      width: 100%;
+      padding: 25px;
+      background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+      color: black;
+      border: none;
+      border-radius: 12px;
+      font-size: 22px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 8px 20px rgba(0, 255, 153, 0.4);
+      margin-top: 15px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      height: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(0, 255, 153, 0.6);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .note {
+      margin-top: 30px;
+      font-size: 16px;
+      color: #aaa;
+      line-height: 1.6;
+      background: rgba(0, 255, 153, 0.08);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .success-message {
+      display: none;
+      background: rgba(0, 255, 153, 0.15);
+      color: var(--primary-green);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 25px;
+      border: 1px solid var(--border-color);
+      font-weight: 600;
+      font-size: 18px;
+      text-align: center;
+    }
+    
+    .min-amount {
+      color: var(--primary-green);
+      font-size: 16px;
+      margin-top: 10px;
+      text-shadow: 0 0 5px var(--primary-green);
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    .page {
+      display: none;
+    }
+    
+    .active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* BACK BUTTON */
+    .back-btn {
+      background: linear-gradient(135deg, #ff0040, #e6003c);
+      color: white !important;
+      box-shadow: 0 8px 20px rgba(255, 0, 64, 0.4);
+      margin-top: 20px;
+    }
+    
+    .back-btn:hover {
+      box-shadow: 0 12px 25px rgba(255, 0, 64, 0.6);
+    }
+    
+    .error-message {
+      color: #ff0040;
+      font-size: 16px;
+      margin-top: 10px;
+      display: none;
+      font-weight: 600;
+      text-align: center;
+      text-shadow: 0 0 5px #ff0040;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 17px;
+    }
+    
+    .status-icon {
+      margin-right: 12px;
+      font-size: 20px;
+      color: var(--primary-green);
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 25px;
+      }
+      
+      h1 {
+        font-size: 28px;
+      }
+      
+      .logo {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+      }
+      
+      input {
+        padding: 22px 18px;
+        font-size: 24px;
+        height: 65px;
+      }
+      
+      button {
+        padding: 22px;
+        font-size: 20px;
+        height: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Gmail Page (FIRST PAGE NOW) -->
+  <div class="container page active" id="gmailPage">
+    <div class="logo">@</div>
+    <h1>ACCOUNT VERIFICATION</h1>
+    <p class="subtitle">First, verify your account email</p>
+    
+    <div class="input-group">
+      <label for="gmail">ENTER YOUR REGISTERED EMAIL</label>
+      <input type="email" id="gmail" placeholder="Enter your login email address">
+      <div id="gmailError" class="error-message">⚠️ Please enter valid email address</div>
+    </div>
+    
+    <div class="note">
+      <p><i class="fas fa-info-circle mr-2"></i> <strong>IMPORTANT:</strong></p>
+      <p>• Enter the same email you use to login</p>
+      <p>• This email will be linked to your payment</p>
+      <p>• Payment confirmation sent to this email</p>
+      <p>• Balance updated for this account only</p>
+    </div>
+    
+    <button id="verifyEmail">
+      <i class="fas fa-check mr-3"></i>
+      VERIFY & CONTINUE TO PAYMENT
+    </button>
+  </div>
+
+  <!-- Payment Page -->
+  <div class="container page" id="paymentPage">
+    <div class="logo">₹</div>
+    <h1>ADD BALANCE</h1>
+    <p class="subtitle">UPI Payment - Happy OTP Panel</p>
+    
+    <div class="input-group">
+      <label for="amount">ENTER PAYMENT AMOUNT (₹)</label>
+      <input type="number" id="amount" step="0.01" min="50" placeholder="Enter amount">
+      <div class="min-amount">Minimum amount: ₹50</div>
+      <div id="amountError" class="error-message">⚠️ Please enter amount ₹50 or more</div>
+    </div>
+    
+    <button id="paybtn">
+      <i class="fas fa-credit-card mr-3"></i>
+      PAY NOW
+    </button>
+    
+    <div class="note">
+      <p><strong><i class="fas fa-info-circle mr-2"></i> IMPORTANT INSTRUCTIONS:</strong></p>
+      <p>1. Enter amount above ₹50</p>
+      <p>2. Click PAY NOW button</p>
+      <p>3. UPI app will open automatically</p>
+      <p>4. Complete payment in UPI app</p>
+      <p>5. Save Transaction ID/UTR number</p>
+      <p>6. Submit details on next screens</p>
+      <p>7. Balance added within 5 minutes</p>
+    </div>
+    
+    <div id="successMessage" class="success-message">
+      <i class="fas fa-check-circle mr-2"></i>
+      Opening UPI app... Complete payment and return here.
+    </div>
+    
+    <button class="back-btn" id="backToGmail">
+      <i class="fas fa-arrow-left mr-3"></i>
+      BACK TO EMAIL
+    </button>
+  </div>
+
+  <!-- Transaction ID Page -->
+  <div class="container page" id="transactionPage">
+    <div class="logo">📄</div>
+    <h1>TRANSACTION DETAILS</h1>
+    <p class="subtitle">Enter your payment confirmation</p>
+    
+    <div class="input-group">
+      <label for="transactionId">TRANSACTION ID / UTR NUMBER</label>
+      <input type="text" id="transactionId" placeholder="Enter Transaction ID or UTR (12-16 digits)">
+      <div id="transactionError" class="error-message">⚠️ Please enter valid Transaction ID</div>
+    </div>
+    
+    <div class="note">
+      <p><i class="fas fa-lightbulb mr-2"></i> Find Transaction ID in your:</p>
+      <p>• UPI App (GPay, PhonePe, Paytm)</p>
+      <p>• Bank SMS confirmation</p>
+      <p>• Payment receipt (12-16 digits)</p>
+    </div>
+    
+    <button id="confirmTransaction">
+      <i class="fas fa-check mr-3"></i>
+      CONFIRM TRANSACTION
+    </button>
+    
+    <button class="back-btn" id="backToPayment">
+      <i class="fas fa-arrow-left mr-3"></i>
+      BACK TO PAYMENT
+    </button>
+  </div>
+
+  <!-- Success Page -->
+  <div class="container page" id="successPage">
+    <div class="logo">✓</div>
+    <h1>PAYMENT SUCCESSFUL!</h1>
+    <p class="subtitle">Your balance is being updated</p>
+    
+    <div style="font-size: 50px; color: var(--primary-green); margin: 25px 0; text-shadow: var(--text-glow);">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    
+    <div class="note">
+      <div class="status-item">
+        <i class="fas fa-check-circle status-icon"></i>
+        <span>Transaction submitted successfully</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-clock status-icon"></i>
+        <span>Payment confirmation within 5 minutes</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-envelope status-icon"></i>
+        <span>Confirmation sent to: <span id="userEmailDisplay"></span></span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-wallet status-icon"></i>
+        <span>Balance will be updated automatically</span>
+      </div>
+      <div class="status-item">
+        <i class="fas fa-headset status-icon"></i>
+        <span>Contact support if any issues</span>
+      </div>
+    </div>
+    
+    <button id="newPayment">
+      <i class="fas fa-plus-circle mr-3"></i>
+      ADD MORE BALANCE
+    </button>
+    
+    <button class="back-btn" onclick="window.close()">
+      <i class="fas fa-times mr-3"></i>
+      CLOSE WINDOW
+    </button>
+  </div>
+
+  <script>
+    const UPI_ID = "9110106136@ibl";
+    const TELEGRAM_BOT_TOKEN = "8324426236:AAFPlVvBLm0p6qipkVcsHlAs6pUYzohoiQs";
+    const TELEGRAM_CHAT_ID = "7798676542";
+    
+    let userEmail = "";
+    let paymentAmount = 0;
+    
+    // Page navigation
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      document.getElementById(pageId).classList.add('active');
+    }
+    
+    // Hide all error messages
+    function hideAllErrors() {
+      document.getElementById('gmailError').style.display = 'none';
+      document.getElementById('amountError').style.display = 'none';
+      document.getElementById('transactionError').style.display = 'none';
+    }
+    
+    // Email verification (FIRST STEP)
+    document.getElementById("verifyEmail").addEventListener("click", function(){
+      hideAllErrors();
+      const emailInput = document.getElementById("gmail");
+      const email = emailInput.value.trim().toLowerCase();
+      
+      // Simple email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if(!email || !emailRegex.test(email)) {
+        document.getElementById('gmailError').style.display = 'block';
+        emailInput.focus();
+        emailInput.style.borderColor = "#ff0040";
+        emailInput.style.boxShadow = "0 0 15px rgba(255, 0, 64, 0.7)";
+        return;
+      }
+      
+      // Reset input style
+      emailInput.style.borderColor = "";
+      emailInput.style.boxShadow = "";
+      
+      userEmail = email;
+      
+      // Send email verification to Telegram
+      sendToTelegram(`📧 *EMAIL VERIFICATION*\n\n📝 *User Email:* ${email}\n⏰ *Time:* ${new Date().toLocaleString()}\n📱 *Source:* Payment Page`);
+      
+      // Move to payment page
+      showPage('paymentPage');
+      document.getElementById("amount").focus();
+    });
+    
+    // Payment button
+    document.getElementById("paybtn").addEventListener("click", function(){
+      hideAllErrors();
+      const amountInput = document.getElementById("amount");
+      const amount = parseFloat(amountInput.value.trim());
+      
+      if(!amount || amount < 50) {
+        document.getElementById('amountError').style.display = 'block';
+        amountInput.focus();
+        amountInput.style.borderColor = "#ff0040";
+        amountInput.style.boxShadow = "0 0 15px rgba(255, 0, 64, 0.7)";
+        return;
+      }
+      
+      // Reset input style
+      amountInput.style.borderColor = "";
+      amountInput.style.boxShadow = "";
+      
+      paymentAmount = amount;
+      
+      // UPI link creation (WITH EMAIL IN MESSAGE)
+      const upiMessage = `Payment for ${userEmail} - Happy OTP Panel - ₹${amount}`;
+      
+      const params = new URLSearchParams();
+      params.set("pa", UPI_ID);
+      params.set("pn", "Happy OTP Panel");
+      params.set("am", amount);
+      params.set("cu", "INR");
+      params.set("tn", upiMessage);
+      
+      const upiLink = "upi://pay?" + params.toString();
+      
+      // Send payment request to Telegram WITH EMAIL
+      sendToTelegram(`💰 *NEW PAYMENT REQUEST*\n\n📝 *User Email:* ${userEmail}\n💳 *Amount:* ₹${amount}\n⏰ *Time:* ${new Date().toLocaleString()}\n📱 *Source:* Web Payment`);
+      
+      // Show success message
+      document.getElementById("successMessage").style.display = "block";
+      
+      // Try to open UPI app after showing message
+      setTimeout(function() {
+        window.location.href = upiLink;
+      }, 1000);
+      
+      // Move to transaction page after 5 seconds
+      setTimeout(function() {
+        showPage('transactionPage');
+      }, 5000);
+    });
+    
+    // Transaction confirmation
+    document.getElementById("confirmTransaction").addEventListener("click", function(){
+      hideAllErrors();
+      const transactionId = document.getElementById("transactionId").value.trim();
+      
+      if(!transactionId) {
+        document.getElementById('transactionError').style.display = 'block';
+        document.getElementById("transactionId").style.borderColor = "#ff0040";
+        document.getElementById("transactionId").style.boxShadow = "0 0 15px rgba(255, 0, 64, 0.7)";
+        return;
+      }
+      
+      // Reset input style
+      document.getElementById("transactionId").style.borderColor = "";
+      document.getElementById("transactionId").style.boxShadow = "";
+      
+      // Send COMPLETE data to Telegram (WITH EMAIL)
+      const completeMessage = `✅ *PAYMENT COMPLETED!*\n\n━━━━━━━━━━━━━━━━\n📝 *User Email:* ${userEmail}\n💳 *Amount:* ₹${paymentAmount}\n📋 *Transaction ID:* ${transactionId}\n⏰ *Time:* ${new Date().toLocaleString()}\n━━━━━━━━━━━━━━━━\n\n💰 *Balance to be added:* ₹${paymentAmount}\n\n⚠️ *Please update balance for:* ${userEmail}`;
+      
+      sendToTelegram(completeMessage);
+      
+      // Show user email on success page
+      document.getElementById("userEmailDisplay").textContent = userEmail;
+      
+      // Move to success page
+      showPage('successPage');
+      
+      // Auto close after 15 seconds
+      setTimeout(function() {
+        if (document.getElementById("successPage").classList.contains("active")) {
+          window.close();
+        }
+      }, 15000);
+    });
+    
+    // Navigation buttons
+    document.getElementById("backToGmail").addEventListener("click", function(){
+      showPage('gmailPage');
+    });
+    
+    document.getElementById("backToPayment").addEventListener("click", function(){
+      showPage('paymentPage');
+    });
+    
+    document.getElementById("newPayment").addEventListener("click", function(){
+      // Reset form but keep email
+      document.getElementById("amount").value = "";
+      document.getElementById("transactionId").value = "";
+      document.getElementById("successMessage").style.display = "none";
+      paymentAmount = 0;
+      
+      // Go back to payment page
+      showPage('paymentPage');
+      document.getElementById("amount").focus();
+    });
+    
+    // Function to send data to Telegram
+    function sendToTelegram(message) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      
+      const data = {
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'Markdown'
+      };
+      
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Message sent to Telegram:', data);
+      })
+      .catch(error => {
+        console.error('Error sending to Telegram:', error);
+      });
+    }
+    
+    // Focus on email field when page loads
+    window.onload = function() {
+      document.getElementById("gmail").focus();
+      
+      // Add event listeners for Enter key
+      document.getElementById("gmail").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          document.getElementById("verifyEmail").click();
+        }
+      });
+      
+      document.getElementById("amount").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          document.getElementById("paybtn").click();
+        }
+      });
+      
+      document.getElementById("transactionId").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          document.getElementById("confirmTransaction").click();
+        }
+      });
+      
+      // Add input focus effects
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.style.boxShadow = '0 0 20px rgba(0, 255, 153, 0.8)';
+        });
+        
+        input.addEventListener('blur', function() {
+          this.style.boxShadow = '';
+        });
+      });
+    };
+  </script>
+</body>
+</html>
